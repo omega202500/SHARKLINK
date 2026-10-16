@@ -1,12 +1,11 @@
 <?php
-// À ajouter dans routes/web.php (en haut : use App\Http\Controllers\DashboardController;)
-
-Route::get('/', fn () => redirect()->route('dashboard'));
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DashboardController;
 
 Route::get('/', function () {
-    return view('/dashboard');
+    return redirect()->route('dashboard');
 });
+
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->name('dashboard');

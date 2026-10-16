@@ -47,13 +47,13 @@
 
             {{-- Type d'utilisateur --}}
             <div class="flex h-12 overflow-hidden rounded-3xl border-[1.5px] border-[#0b1f3a] lg:mx-11 lg:mt-[124px] lg:h-[46px]"
-                 role="tablist" aria-label="Type d'utilisateur">
+                role="tablist" aria-label="Type d'utilisateur">
                 <button type="button" data-role="etudiant" role="tab" aria-selected="true"
-                        class="role-tab flex flex-1 items-center justify-center bg-white text-base text-[#0b1f3a]">
+                        class="role-tab flex flex-1 items-center justify-center bg-[#0b1f3a] text-base text-white transition-colors">
                     Étudiants
                 </button>
                 <button type="button" data-role="employe" role="tab" aria-selected="false"
-                        class="role-tab flex flex-1 items-center justify-center bg-[#0b1f3a] text-base text-white">
+                        class="role-tab flex flex-1 items-center justify-center bg-white text-base text-[#0b1f3a] transition-colors">
                     Employés
                 </button>
             </div>
@@ -140,10 +140,11 @@
 </div>
 
 <script>
-    // Afficher / masquer le mot de passe
+    // 1. Afficher / masquer le mot de passe
     const pwd = document.getElementById('password');
     const eyeOn = document.getElementById('eye-on');
     const eyeOff = document.getElementById('eye-off');
+    
     document.getElementById('toggle-password').addEventListener('click', () => {
         const show = pwd.type === 'password';
         pwd.type = show ? 'text' : 'password';
@@ -151,21 +152,36 @@
         eyeOff.classList.toggle('hidden', !show);
     });
 
-    // Bascule Étudiants / Employés (sélectionné = fond blanc, comme dans la maquette)
+    // 2. Gestion des onglets Étudiants / Employés
     const tabs = document.querySelectorAll('.role-tab');
     const roleInput = document.getElementById('user_type');
+
     const setRole = (role) => {
+        // Mettre à jour l'input caché
         roleInput.value = role;
+
         tabs.forEach((tab) => {
-            const active = tab.dataset.role === role;
-            tab.setAttribute('aria-selected', active);
-            tab.classList.toggle('bg-white', active);
-            tab.classList.toggle('text-[#0b1f3a]', active);
-            tab.classList.toggle('bg-[#0b1f3a]', !active);
-            tab.classList.toggle('text-white', !active);
+            const isActive = tab.dataset.role === role;
+            tab.setAttribute('aria-selected', isActive);
+            
+            if (isActive) {
+                // Onglet sélectionné : Fond bleu foncé, texte blanc
+                tab.classList.add('bg-[#0b1f3a]', 'text-white');
+                tab.classList.remove('bg-white', 'text-[#0b1f3a]');
+            } else {
+                // Onglet non sélectionné : Fond blanc, texte bleu foncé
+                tab.classList.add('bg-white', 'text-[#0b1f3a]');
+                tab.classList.remove('bg-[#0b1f3a]', 'text-white');
+            }
         });
     };
-    tabs.forEach((tab) => tab.addEventListener('click', () => setRole(tab.dataset.role)));
+
+    // Ajouter l'écouteur de clic à chaque onglet
+    tabs.forEach((tab) => {
+        tab.addEventListener('click', () => setRole(tab.dataset.role));
+    });
+
+    // Initialiser avec la valeur par défaut (Étudiants sélectionné)
     setRole(roleInput.value || 'etudiant');
 </script>
 </body>

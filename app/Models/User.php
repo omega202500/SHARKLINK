@@ -2,7 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -10,14 +13,12 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    // Indiquer à Laravel que la clé primaire n'est pas incrémentée automatiquement par Laravel 
-    // (car gérée par la séquence PostgreSQL, bien que Laravel le gère souvent bien, c'est plus sûr)
     public $incrementing = true;
+
     protected $keyType = 'int';
 
     /**
      * Les attributs qui sont mass assignable.
-     * Basé sur ta table 'users' du fichier SQL.
      */
     protected $fillable = [
         'public_id',
@@ -37,7 +38,7 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password',
-        'remember_token', // Ajouté pour la compatibilité avec l'auth Laravel
+        'remember_token',
     ];
 
     /**
@@ -53,10 +54,73 @@ class User extends Authenticatable
     }
 
     /**
-     * Accesseur pour obtenir le nom complet (optionnel mais très utile)
+     * Accesseur pour obtenir le nom complet
      */
     public function getFullNameAttribute(): string
     {
         return "{$this->first_name} {$this->last_name}";
+    }
+
+    /**
+     * Un utilisateur a plusieurs appartenances à des établissements
+     */
+    public function memberships(): HasMany
+    {
+        return $this->hasMany(EstablishmentMembership::class);
+    }
+
+    /**
+     * Un utilisateur a plusieurs établissements (via memberships)
+     */
+    public function establishments(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Establishment::class,
+            'establishment_memberships',
+            'user_id',
+            'establishment_id'
+        )->withPivot('id', 'member_number', 'status', 'joined_at');
+    }
+
+    /**
+     * ✅ Obtenir tous les rôles d'un utilisateur dans un établissement spécifique
+     * (C'était cette méthode qui était commentée par erreur !)
+     */
+    public function rolesInEstablishment(int $establishmentId): Collection
+    {
+        $membership = $this->memberships()
+            ->where('establishment_id', $establishmentId)
+            ->first();
+
+        if (! $membership) {
+            return new Collection;
+        }
+
+        return $membership->roles;
+    }
+
+    /**
+     * Vérifier si l'utilisateur a un rôle spécifique dans un établissement
+     */
+    public function hasRoleInEstablishment(string $roleCode, int $establishmentId): bool
+    {
+        return $this->rolesInEstablishment($establishmentId)
+            ->contains('code', $roleCode);
+    }
+
+    /**
+     * Vérifier si l'utilisateur est étudiant dans au moins un établissement
+     */
+    public function isStudent(): bool
+    {
+        return $this->memberships()->whereHas('studentProfile')->exists();
+    }
+
+    /**
+     * Vérifier si l'utilisateur est employé dans au moins un établissement
+     */
+    public function isStaff(): bool
+    {
+        return $this->memberships()->whereHas('staffProfile')->exists();
     }
 }

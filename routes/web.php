@@ -19,52 +19,30 @@ Route::view('/login', 'auth.login')->name('login');
 
 // Traitement du formulaire de connexion (POST)
 Route::post('/login', function (Request $request) {
-    // 1. Validation des données
     $credentials = $request->validate([
         'email' => ['required', 'email'],
         'password' => ['required'],
     ]);
 
-    // 2. Tentative d'authentification
     if (Auth::attempt([
         'email' => $credentials['email'], 
         'password' => $credentials['password'], 
-        'status' => 'ACTIF' // On s'assure que le compte est actif
+        'status' => 'ACTIF'
     ], $request->boolean('remember'))) {
         
-        // 3. Sécurité : Régénérer la session pour éviter la fixation de session
         $request->session()->regenerate();
         $user = Auth::user();
-        
-        // 4. Mettre à jour la date de dernière connexion
         $user->update(['last_login_at' => now()]);
 
-        // 5. LOGIQUE DE REDIRECTION INTELLIGENTE
-        // On compte combien d'établissements actifs sont liés à cet utilisateur
-        $establishmentsCount = $user->establishments()->wherePivot('status', 'ACTIF')->count();
-
-        if ($establishmentsCount === 1) {
-            // CAS ÉTUDIANT (ou employé mono-établissement) : 
-            $uniqueEstablishment = $user->establishments()->wherePivot('status', 'ACTIF')->first();
-            
-            // On le définit automatiquement en session
-            session(['active_establishment_id' => $uniqueEstablishment->id]);
-            
-            // Redirection directe vers le dashboard
-            return redirect()->intended(route('dashboard'));
-        }
-
-        // CAS EMPLOYÉ MULTI-ÉTABLISSEMENTS :
-        // On l'envoie choisir son espace de travail
+        // ✅ NOUVEAU : Redirection SYSTÉMATIQUE vers la sélection d'établissement
+        // Cela garantit que l'utilisateur passe toujours par l'étape de choix/confirmation
         return redirect()->route('establishment.select');
     }
 
-    // 6. Échec de l'authentification
     return back()->withErrors([
         'email' => 'Les informations d\'identification fournies ne correspondent pas à nos enregistrements ou votre compte est inactif.',
     ])->onlyInput('email');
 })->name('login.store');
-
 
 // =============================================================================
 // 2. ROUTES PROTÉGÉES (Nécessite d'être connecté - Middleware 'auth')
@@ -73,8 +51,9 @@ Route::post('/login', function (Request $request) {
 Route::middleware(['auth'])->group(function () {
     
     // --- Gestion du Tableau de Bord ---
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
+    Route::get('/dashboard', [DashboardController::class, 'index'])
+        ->middleware('establishment.active')
+        ->name('dashboard');
     // --- Gestion du choix d'établissement (Multi-établissements) ---
     // Affiche la page de choix (vue auth.selection-etablissement alimentée par le contrôleur)
     Route::get('/select-establishment', [EstablishmentSelectionController::class, 'index'])

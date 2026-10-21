@@ -44,15 +44,26 @@
     $moyenne = max(0, min(100, (float) ($examens['moyenne'] ?? 0)));
     $traitMoyenne = $moyenne / 100 * $circ;
 
-    // Raccourcis (remplace les « # » par tes routes)
+      // Raccourcis connectés aux routes administrateur
     $raccourcis = [
-        ['label' => 'Ajouter Étudiant',   'icone' => 'user-plus',             'href' => '#'],
-        ['label' => 'Prendre Présence',   'icone' => 'clipboard-check',       'href' => '#'],
-        ['label' => 'Créer Facture',      'icone' => 'receipt',               'href' => '#'],
-        ['label' => 'Télécharger Notes',  'icone' => 'download',              'href' => '#'],
-        ['label' => 'Générer Rapport',    'icone' => 'chart-no-axes-combined','href' => '#'],
-        ['label' => 'Calendrier',         'icone' => 'calendar-days',         'href' => '#'],
+        ['label' => 'Ajouter Utilisateur', 'icone' => 'user-plus',             'href' => route('admin.users')],
+        ['label' => 'Gérer Établissements','icone' => 'building',              'href' => route('admin.establishments')],
+        ['label' => 'Programmes & Niveaux','icone' => 'graduation-cap',        'href' => route('admin.programs')],
+        ['label' => 'Rôles & Permissions', 'icone' => 'user-shield',           'href' => route('admin.roles')],
+        ['label' => 'Générer Rapport',     'icone' => 'chart-column',          'href' => route('admin.reports')],
+        ['label' => 'Paramètres',          'icone' => 'gear',                  'href' => route('admin.settings')],
     ];
+@endphp
+@php
+    // Génération des initiales pour l'avatar (ex: "Jean Dupont" -> "JD")
+    $nomComplet = trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')) ?: 'Utilisateur';
+    $initiales = mb_strtoupper(
+        collect(preg_split('/\s+/', $nomComplet))
+            ->filter()
+            ->map(fn ($mot) => mb_substr($mot, 0, 1))
+            ->take(2)
+            ->join('')
+    );
 @endphp
 <!DOCTYPE html>
 <html lang="fr">
@@ -419,7 +430,17 @@
             .statistiques { grid-template-columns: minmax(0, 1fr); }
             .pied { flex-direction: column; }
         }
+        /* ---------- Menu déroulant profil ---------- */
+        .compte-details[open] .compte-summary .fa-chevron-down {
+            transform: rotate(180deg);
+        }
+
+        .compte-dropdown a:hover,
+        .compte-dropdown button:hover {
+            background: var(--fond) !important;
+        }
     </style>
+    
 </head>
 <body>
 
@@ -436,7 +457,7 @@
             <kbd>⌘ K</kbd>
         </div>
 
-        <div class="compte-zone">
+              <div class="compte-zone">
             <div class="notif">
                 <img src="{{ asset('images/bell.svg') }}" alt="Notifications">
                 @if (($notifications ?? 0) > 0)
@@ -444,15 +465,75 @@
                 @endif
             </div>
 
-            <div class="compte">
-                <img class="portrait" src="{{ $avatar }}" alt="">
-                <div class="identite">
-                    <p class="nom">{{ $user->name }}</p>
-                    <p class="role">{{ $roleLabel ?? 'Administrateur' }}</p>
-                </div>
-            </div>
+            {{-- ✅ NOUVEAU MENU DÉROULANT PROFIL AMÉLIORÉ --}}
+                  {{-- ✅ MENU DÉROULANT PROFIL (CSS custom, cohérent avec le fichier) --}}
+            <details class="compte-details" style="position: relative;">
+                <summary class="compte-summary" style="cursor: pointer; list-style: none; display: flex; align-items: center; gap: 10px;">
+                    <div style="text-align: right;">
+                        <p style="font-weight: 600; font-size: 12px; white-space: nowrap; color: var(--bleu-nuit);">
+                            {{ $user->first_name }} {{ $user->last_name }}
+                        </p>
+                        <p style="margin-top: 4px; font-size: 10px; color: var(--gris);">
+                            {{ $roleLabel ?? 'Administrateur' }}
+                        </p>
+                    </div>
+                    <span style="flex: 0 0 38px; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; border-radius: 100px; background: #e7fafd; color: var(--turquoise); font-size: 12px; font-weight: 700; border: 1px solid #d9f6fc;">
+                        {{ $initiales }}
+                    </span>
+                    <i class="fa-solid fa-chevron-down" style="font-size: 10px; color: var(--gris);"></i>
+                </summary>
 
-            <img class="chevron" src="{{ asset('images/chevron-down.svg') }}" alt="">
+                <div class="compte-dropdown" style="
+                    position: absolute;
+                    right: 0;
+                    top: 50px;
+                    z-index: 100;
+                    min-width: 220px;
+                    background: #fff;
+                    border: 1px solid var(--trait-fort);
+                    border-radius: 12px;
+                    box-shadow: 0 10px 30px rgba(11, 31, 58, 0.12);
+                    padding: 8px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 4px;
+                ">
+                    {{-- Info utilisateur --}}
+                    <div style="padding: 10px 12px; border-bottom: 1px solid var(--trait); margin-bottom: 4px;">
+                        <p style="font-weight: 600; font-size: 12px; color: var(--bleu-nuit); margin: 0;">
+                            {{ $user->first_name }} {{ $user->last_name }}
+                        </p>
+                        <p style="font-size: 10px; color: var(--gris); margin: 2px 0 0 0; word-break: break-all;">
+                            {{ $user->email }}
+                        </p>
+                        <span style="display: inline-block; margin-top: 6px; padding: 3px 8px; border-radius: 100px; background: #e7fafd; color: var(--turquoise); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
+                            {{ $roleLabel }}
+                        </span>
+                    </div>
+
+                    {{-- Options --}}
+                    <a href="#" style="display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; font-size: 12px; color: var(--bleu-nuit); text-decoration: none; transition: background 0.15s;">
+                        <i class="fa-regular fa-user" style="width: 14px; text-align: center; color: var(--gris);"></i>
+                        Mon Profil
+                    </a>
+                    <a href="{{ route('admin.settings') }}" style="display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; font-size: 12px; color: var(--bleu-nuit); text-decoration: none; transition: background 0.15s;">
+                        <i class="fa-solid fa-gear" style="width: 14px; text-align: center; color: var(--gris);"></i>
+                        Paramètres
+                    </a>
+
+                    {{-- Séparateur + Déconnexion --}}
+                    <div style="border-top: 1px solid var(--trait); margin-top: 4px; padding-top: 4px;">
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" style="width: 100%; display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; font-size: 12px; color: #c0392b; background: none; border: none; cursor: pointer; text-align: left; transition: background 0.15s;">
+                                <i class="fa-solid fa-arrow-right-from-bracket" style="width: 14px; text-align: center;"></i>
+                                Se déconnecter
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </details>
+            {{-- FIN DU MENU DÉROULANT --}}
         </div>
     </header>
 
@@ -570,8 +651,8 @@
                     @endforeach
                 </div>
 
-                {{-- TODO : route de la liste complète des présences --}}
-                <a href="#" class="lien-carte">
+                {{-- Lien vers les rapports de présence --}}
+                <a href="{{ route('admin.reports') }}" class="lien-carte">
                     <span>Voir toutes les présences</span>
                     <img src="{{ asset('images/arrow-right.svg') }}" alt="">
                 </a>

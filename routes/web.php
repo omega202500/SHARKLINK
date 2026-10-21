@@ -72,11 +72,20 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->route('login');
     })->name('logout');
 
+        // ✅ --- Gestion des routes pour les administrateurs ---
+    Route::prefix('admin')->name('admin.')->middleware('establishment.active')->group(function () {
+        Route::get('/users', [\App\Http\Controllers\AdminController::class, 'users'])->name('users');
+        Route::get('/establishments', [\App\Http\Controllers\AdminController::class, 'establishments'])->name('establishments');
+        Route::get('/programs', [\App\Http\Controllers\AdminController::class, 'programs'])->name('programs');
+        Route::get('/roles', [\App\Http\Controllers\AdminController::class, 'roles'])->name('roles');
+        Route::get('/settings', [\App\Http\Controllers\AdminController::class, 'settings'])->name('settings');
+        Route::get('/reports', [\App\Http\Controllers\AdminController::class, 'reports'])->name('reports');
+    });
+
     // --- Gestion des routes pour les enseignants ---
     Route::get('/teacher/courses', [TeacherController::class, 'courses'])
     ->middleware('establishment.active')
     ->name('teacher.courses.index');
-
     Route::prefix('teacher')->name('teacher.')->middleware('establishment.active')->group(function () {
         Route::get('/courses', [\App\Http\Controllers\TeacherController::class, 'courses'])->name('courses');
         Route::get('/grades', [\App\Http\Controllers\TeacherController::class, 'grades'])->name('grades');
@@ -96,6 +105,14 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/enrollments', [\App\Http\Controllers\StudentController::class, 'enrollments'])->name('enrollments');
         Route::get('/finances', [\App\Http\Controllers\StudentController::class, 'finances'])->name('finances');
         Route::get('/announcements', [\App\Http\Controllers\StudentController::class, 'announcements'])->name('announcements');
+    });
+        // ✅ --- Gestion des routes pour la Scolarité / Secrétariat (Office) ---
+    Route::prefix('office')->name('office.')->middleware('establishment.active')->group(function () {
+        Route::get('/students', [\App\Http\Controllers\OfficeController::class, 'students'])->name('students');
+        Route::get('/enrollments', [\App\Http\Controllers\OfficeController::class, 'enrollments'])->name('enrollments');
+        Route::get('/documents', [\App\Http\Controllers\OfficeController::class, 'documents'])->name('documents');
+        Route::get('/timetable', [\App\Http\Controllers\OfficeController::class, 'timetable'])->name('timetable');
+        Route::get('/announcements', [\App\Http\Controllers\OfficeController::class, 'announcements'])->name('announcements');
     });
 
     // Tu ajouteras ici toutes les autres routes protégées plus tard (ex: /etudiants, /notes, etc.)

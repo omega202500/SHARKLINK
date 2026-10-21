@@ -80,6 +80,30 @@
 
     {{-- ✅ LIEN FONT AWESOME FIABLE ET SÉCURISÉ --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* Menu mobile responsive */
+        .sidebar-mobile {
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out;
+        }
+        .sidebar-mobile.open {
+            transform: translateX(0);
+        }
+        .overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 40;
+        }
+        .overlay.active {
+            display: block;
+        }
+        @media (min-width: 768px) {
+            .sidebar-mobile { transform: none !important; }
+            .overlay { display: none !important; }
+        }
+    </style>
 
     {{-- Tailwind (CDN Play, à remplacer par @vite en production) --}}
     <script src="https://cdn.tailwindcss.com/3.4.17"></script>
@@ -108,16 +132,21 @@
 </head>
 <body class="flex min-h-screen flex-col bg-brand-fond font-sans text-sm text-brand-nuit md:flex-row">
 
+    {{-- Overlay pour fermer le menu en cliquant à l'extérieur --}}
+    <div id="sidebar-overlay" class="overlay" onclick="toggleSidebar()"></div>
     {{-- ===================== Barre latérale ===================== --}}
-    <aside class="flex w-full shrink-0 flex-col gap-3 bg-brand-nuit p-4 text-[#d3dcea] md:sticky md:top-0 md:h-screen md:w-[260px] md:gap-8 md:px-[17px] md:py-8">  
+    <aside id="sidebar" class="sidebar-mobile fixed top-0 left-0 z-50 h-full w-[260px] flex flex-col gap-3 bg-brand-nuit p-4 text-[#d3dcea] md:static md:transform-none">        
         <div class="flex items-center justify-center gap-[5px] text-[19px] font-extrabold tracking-[0.08em] text-brand-cyan md:px-4">
            <img
                 src="{{ asset('images/shark-mark-dark.svg') }}"
-                alt="Logo SHARKLINK"
+                alt=""
                 class="h-[46px] w-[43px] shrink-0"
             >
             <span>SHARKLINK</span>
         </div>
+        <button onclick="toggleSidebar()" class="md:hidden absolute top-4 right-4 text-white hover:text-brand-cyan">
+            <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
 
         <nav class="flex gap-1.5 overflow-x-auto pb-1 md:flex-col md:overflow-visible md:pb-0" aria-label="Navigation principale">
             @foreach ($menu as $item)
@@ -144,11 +173,15 @@
 
         {{-- ===================== En-tête ===================== --}}
         <header class="flex h-[72px] items-center justify-between gap-4 border-b border-brand-trait bg-white px-4 md:px-9">
-            <div class="min-w-0">
-                <h1 class="truncate text-lg font-bold">Bonjour {{ $user->name }}</h1>
-                <p class="mt-[3px] truncate text-xs text-brand-gris">Enseignant · {{ $etablissementNom }}</p>
+            <div class="flex items-center gap-3">
+                <button onclick="toggleSidebar()" class="md:hidden text-brand-nuit">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+                <div class="min-w-0">
+                    <h1 class="truncate text-lg font-bold">Bonjour {{ $user->name }}</h1>
+                    <p class="mt-[3px] truncate text-xs text-brand-gris">Enseignant · {{ $etablissementNom }}</p>
+                </div>
             </div>
-
             <div class="flex items-center gap-5">
                 <div class="hidden h-11 w-[290px] items-center gap-2.5 rounded-lg border border-brand-trait bg-brand-fond px-3.5 text-brand-gris focus-within:border-brand-cyan md:flex" role="search">
                     <i class="ico size-[18px]" style="--ico: url('{{ asset('images/search.svg') }}')"></i>
@@ -287,5 +320,12 @@
         </main>
     </div>
 
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('sidebar-overlay').classList.toggle('active');
+        }
+    </script>
+</body>
 </body>
 </html>

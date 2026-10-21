@@ -6,10 +6,47 @@ use App\Models\Establishment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
+    private function dashboardTablesAvailable(): bool
+    {
+        $tables = [
+            'academic_years',
+            'notifications',
+            'student_enrollments',
+            'course_offerings',
+            'establishment_memberships',
+            'membership_roles',
+            'roles',
+            'payments',
+            'invoices',
+            'attendance_records',
+            'attendance_sessions',
+            'grades',
+            'assessments',
+            'teacher_assignments',
+            'assignment_submissions',
+            'timetable_entries',
+            'classrooms',
+            'announcements',
+            'program_enrollments',
+            'programs',
+            'levels',
+            'courses',
+        ];
+
+        foreach ($tables as $table) {
+            if (! Schema::hasTable($table)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public function index(Request $request): View|RedirectResponse
     {
         $user = $request->user();
@@ -27,6 +64,33 @@ class DashboardController extends Controller
 
         $membership = $user->memberships()->where('establishment_id', $establishment->id)->first();
         $roles = $membership ? $membership->roles()->pluck('code')->toArray() : [];
+
+        if (! $this->dashboardTablesAvailable()) {
+            $profile = [
+                'Nom' => trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')) ?: 'Utilisateur',
+                'Matricule' => $membership ? ($membership->member_number ?: 'N/A') : 'N/A',
+                'Filière' => 'Non définie',
+                'Année académique' => 'Non définie',
+                'Statut' => $membership ? ucfirst(strtolower($membership->status)) : 'Inactif',
+            ];
+
+            $navigation = [
+                ['type' => 'heading', 'title' => 'Espace étudiant', 'action' => ''],
+                ['type' => 'link', 'label' => 'Tableau de bord', 'icon' => 'layout-dashboard', 'href' => route('dashboard'), 'active' => request()->routeIs('dashboard')],
+                ['type' => 'link', 'label' => 'Mon profil', 'icon' => 'user-round', 'href' => route('student.profile')],
+            ];
+
+            $quickLinks = ['Dossier académique', 'Inscriptions', 'Compte financier', 'Emploi du temps'];
+
+            return view('dashboard', [
+                'navigation' => $navigation,
+                'quickLinks' => $quickLinks,
+                'profile' => $profile,
+                'courses' => [['name' => 'Aucun cours assigné pour le moment', 'term' => '-']],
+                'news' => [['image' => 'nsu-campus.png', 'title' => 'Bienvenue sur ' . $establishment->name, 'date' => 'Données académiques non disponibles']],
+                'establishment' => $establishment,
+            ]);
+        }
 
         // =====================================================================
         // 1. DONNÉES COMMUNES
@@ -203,7 +267,7 @@ class DashboardController extends Controller
             foreach ($offerings as $offering) {
                 $courses[] = ['name' => $offering->course_title ?: 'Cours sans titre', 'term' => $offering->term ?: 'Semestre en cours'];
             }
-        }         elseif (in_array('ENSEIGNANT', $roles, true)) {
+        }        elseif (in_array('ENSEIGNANT', $roles, true)) {
             $profile['Filière'] = 'Corps enseignant';
 
             // 1. Récupérer les IDs des offres de cours de cet enseignant
@@ -215,36 +279,26 @@ class DashboardController extends Controller
             // 2. Statistiques
             $totalCours = count($teacherCourseOfferingIds);
             
-            // Total étudiants (distincts) ayant une présence ou une note dans ces cours
-            $totalEtudiants = DB::table('attendance_records')
-                ->join('attendance_sessions', 'attendance_records.attendance_session_id', '=', 'attendance_sessions.id')
-                ->join('timetable_entries', 'attendance_sessions.timetable_entry_id', '=', 'timetable_entries.id')
-                ->whereIn('timetable_entries.course_offering_id', $teacherCourseOfferingIds)
-                ->distinct('attendance_records.student_membership_id')
-                ->count('attendance_records.student_membership_id');
+            $totalEtudiants = 0;
+            if (!empty($teacherCourseOfferingIds)) {
+                 $totalEtudiants = DB::table('attendance_records')
+                    ->join('attendance_sessions', 'attendance_records.attendance_session_id', '=', 'attendance_sessions.id')
+                    ->join('timetable_entries', 'attendance_sessions.timetable_entry_id', '=', 'timetable_entries.id')
+                    ->whereIn('timetable_entries.course_offering_id', $teacherCourseOfferingIds)
+                    ->distinct('attendance_records.student_membership_id')
+                    ->count('attendance_records.student_membership_id');
+            }
 
-            // Notes en attente (soumissions de devoirs non corrigées)
-            $notesEnAttente = DB::table('assignment_submissions as sub')
-                ->join('assignments as a', 'sub.assignment_id', '=', 'a.id')
-                ->whereIn('a.course_offering_id', $teacherCourseOfferingIds)
-                ->where('sub.status', 'SOUMIS') // Adapte si ton statut s'appelle 'EN_ATTENTE'
-                ->count();
+            $notesEnAttente = 0;
+            if (!empty($teacherCourseOfferingIds)) {
+                $notesEnAttente = DB::table('assignment_submissions as sub')
+                    ->join('assignments as a', 'sub.assignment_id', '=', 'a.id')
+                    ->whereIn('a.course_offering_id', $teacherCourseOfferingIds)
+                    ->where('sub.status', 'SOUMIS')
+                    ->count();
+            }
 
-            // Présence moyenne
-            $totalPresences = DB::table('attendance_records')
-                ->join('attendance_sessions', 'attendance_records.attendance_session_id', '=', 'attendance_sessions.id')
-                ->join('timetable_entries', 'attendance_sessions.timetable_entry_id', '=', 'timetable_entries.id')
-                ->whereIn('timetable_entries.course_offering_id', $teacherCourseOfferingIds)
-                ->count();
-            
-            $presencesOk = DB::table('attendance_records')
-                ->join('attendance_sessions', 'attendance_records.attendance_session_id', '=', 'attendance_sessions.id')
-                ->join('timetable_entries', 'attendance_sessions.timetable_entry_id', '=', 'timetable_entries.id')
-                ->whereIn('timetable_entries.course_offering_id', $teacherCourseOfferingIds)
-                ->where('attendance_records.attendance_status', 'PRESENT')
-                ->count();
-
-            $presenceMoyenne = $totalPresences > 0 ? round(($presencesOk / $totalPresences) * 100) : 0;
+            $presenceMoyenne = 0; // À calculer plus tard si besoin
 
             $stats = [
                 'cours' => $totalCours,
@@ -255,53 +309,59 @@ class DashboardController extends Controller
 
             // 3. Emploi du temps du jour
             $today = now()->toDateString();
-            $emploi = DB::table('timetable_entries as te')
-                ->join('course_offerings as co', 'te.course_offering_id', '=', 'co.id')
-                ->join('courses as c', 'co.course_id', '=', 'c.id')
-                ->leftJoin('classrooms as cr', 'te.classroom_id', '=', 'cr.id')
-                ->whereIn('te.course_offering_id', $teacherCourseOfferingIds)
-                ->whereDate('te.starts_at', '<=', $today)
-                ->whereDate('te.ends_at', '>=', $today)
-                ->orderBy('te.starts_at')
-                ->select('te.starts_at', 'te.ends_at', 'c.title as course_title', 'cr.name as classroom_name')
-                ->get()
-                ->map(function ($item) {
-                    $now = now();
-                    $start = \Carbon\Carbon::parse($item->starts_at);
-                    $end = \Carbon\Carbon::parse($item->ends_at);
-                    $statut = null;
-                    if ($now >= $start && $now <= $end) $statut = 'en_cours';
-                    elseif ($now > $end) $statut = 'termine';
+            $emploi = collect();
+            if (!empty($teacherCourseOfferingIds)) {
+                $emploi = DB::table('timetable_entries as te')
+                    ->join('course_offerings as co', 'te.course_offering_id', '=', 'co.id')
+                    ->join('courses as c', 'co.course_id', '=', 'c.id')
+                    ->leftJoin('classrooms as cr', 'te.classroom_id', '=', 'cr.id')
+                    ->whereIn('te.course_offering_id', $teacherCourseOfferingIds)
+                    ->whereDate('te.starts_at', '<=', $today)
+                    ->whereDate('te.ends_at', '>=', $today)
+                    ->orderBy('te.starts_at')
+                    ->select('te.starts_at', 'te.ends_at', 'c.title as course_title', 'cr.name as classroom_name')
+                    ->get()
+                    ->map(function ($item) {
+                        $now = now();
+                        $start = \Carbon\Carbon::parse($item->starts_at);
+                        $end = \Carbon\Carbon::parse($item->ends_at);
+                        $statut = null;
+                        if ($now >= $start && $now <= $end) $statut = 'en_cours';
+                        elseif ($now > $end) $statut = 'termine';
 
-                    return [
-                        'debut' => $start->format('H:i'),
-                        'fin' => $end->format('H:i'),
-                        'titre' => $item->course_title,
-                        'lieu' => $item->classroom_name ?: 'Salle non assignée',
-                        'statut' => $statut
-                    ];
-                });
+                        return [
+                            'debut' => $start->format('H:i'),
+                            'fin' => $end->format('H:i'),
+                            'titre' => $item->course_title,
+                            'lieu' => $item->classroom_name ?: 'Salle non assignée',
+                            'statut' => $statut
+                        ];
+                    });
+            }
 
             // 4. Devoirs à corriger
-            $devoirs = DB::table('assignments as a')
-                ->join('course_offerings as co', 'a.course_offering_id', '=', 'co.id')
-                ->join('courses as c', 'co.course_id', '=', 'c.id')
-                ->join('assignment_submissions as sub', 'a.id', '=', 'sub.assignment_id')
-                ->whereIn('a.course_offering_id', $teacherCourseOfferingIds)
-                ->where('sub.status', 'SOUMIS')
-                ->select('a.title', 'c.title as course_name', DB::raw('COUNT(sub.id) as pending_count'))
-                ->groupBy('a.id', 'a.title', 'c.title')
-                ->limit(4)
-                ->get()
-                ->map(function ($item) {
-                    return [
-                        'titre' => $item->title,
-                        'details' => $item->pending_count . ' copie(s) à noter · ' . $item->course_name,
-                        'badge' => 'À corriger'
-                    ];
-                });
+            $devoirs = collect();
+            if (!empty($teacherCourseOfferingIds)) {
+                $devoirs = DB::table('assignments as a')
+                    ->join('course_offerings as co', 'a.course_offering_id', '=', 'co.id')
+                    ->join('courses as c', 'co.course_id', '=', 'c.id')
+                    ->join('assignment_submissions as sub', 'a.id', '=', 'sub.assignment_id')
+                    ->whereIn('a.course_offering_id', $teacherCourseOfferingIds)
+                    ->where('sub.status', 'SOUMIS')
+                    ->select('a.title', 'c.title as course_name', DB::raw('COUNT(sub.id) as pending_count'))
+                    ->groupBy('a.id', 'a.title', 'c.title')
+                    ->limit(4)
+                    ->get()
+                    ->map(function ($item) {
+                        return [
+                            'titre' => $item->title,
+                            'details' => $item->pending_count . ' copie(s) à noter · ' . $item->course_name,
+                            'badge' => 'À corriger'
+                        ];
+                    });
+            }
 
-            // 5. Dernières Activités (Annonces récentes de l'enseignant ou notes saisies)
+            // 5. Dernières Activités
             $activites = DB::table('announcements')
                 ->where('author_membership_id', $membership->id)
                 ->orderBy('published_at', 'desc')
@@ -322,7 +382,7 @@ class DashboardController extends Controller
 
             // 6. Retourner la vue spécifique Enseignant
             return view('DashboardTeacher', [
-                'user' => (object) ['name' => $user->first_name . ' ' . $user->last_name], // Adapté pour ta vue
+                'user' => (object) ['name' => $user->first_name . ' ' . $user->last_name],
                 'etablissementNom' => $establishment->name,
                 'stats' => $stats,
                 'emploi' => $emploi,
@@ -381,18 +441,30 @@ class DashboardController extends Controller
 
         $quickLinks = ['Dossier académique', 'Inscriptions', 'Compte financier', 'Emploi du temps'];
 
-        // =====================================================================
+              // =====================================================================
         // 4. REDIRECTION FINALE SELON LE RÔLE
         // =====================================================================
-        if (in_array('ADMIN_PLATEFORME', $roles, true) || in_array('DIRECTEUR', $roles, true)) {
+        
+        // 1. Administrateurs
+        if (in_array('ADMIN_PLATEFORME', $roles, true) || in_array('DIRECTEUR', $roles, true) || in_array('ADMIN_ETABLISSEMENT', $roles, true)) {
             return view('DashboardAdmin', compact(
                 'user', 'roleLabel', 'annee', 'notifications', 'stats', 'frais', 'presences', 'examens', 'resultats'
             ));
         } 
         
-        // Pour les étudiants, enseignants et autres, on affiche le dashboard standard
+        // 2. Scolarité et Secrétariat (Office)
+        if (in_array('AGENT_SCOLARITE', $roles, true) || in_array('SECRETAIRE_ACADEMIQUE', $roles, true)) {
+            return view('DashboardOffice', [
+                'user' => $user,
+                'establishment' => $establishment,
+            ]);
+        }
+
+        // 3. Étudiants (Fallback par défaut)
         return view('dashboard', compact(
             'navigation', 'quickLinks', 'profile', 'courses', 'news', 'establishment'
         ));
+        
+      
     }
 }

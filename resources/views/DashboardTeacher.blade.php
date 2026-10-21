@@ -33,20 +33,20 @@
     // ✅ 2. Noms d'icônes corrigés pour Font Awesome (au lieu des noms Lucide)
     $menu = [
         ['label' => 'Tableau de bord', 'icone' => 'gauge-high',         'route' => 'dashboard'],
-        ['label' => 'Mes Cours',       'icone' => 'book-open',          'route' => null],
-        ['label' => 'Saisie Notes',    'icone' => 'pen-to-square',      'route' => null],
-        ['label' => 'Emploi du Temps', 'icone' => 'calendar-days',      'route' => null],
-        ['label' => 'Présence',        'icone' => 'user-check',         'route' => null],
-        ['label' => 'Devoirs',         'icone' => 'file-lines',         'route' => null],
-        ['label' => 'Annonces',        'icone' => 'bullhorn',           'route' => null],
-        ['label' => 'Rapports',        'icone' => 'chart-column',       'route' => null],
+        ['label' => 'Mes Cours',       'icone' => 'book-open',          'route' => 'teacher.courses'],
+        ['label' => 'Saisie Notes',    'icone' => 'pen-to-square',      'route' => 'teacher.grades'],
+        ['label' => 'Emploi du Temps', 'icone' => 'calendar-days',      'route' => 'teacher.timetable'],
+        ['label' => 'Présence',        'icone' => 'user-check',         'route' => 'teacher.attendance'],
+        ['label' => 'Devoirs',         'icone' => 'file-lines',         'route' => 'teacher.assignments'],
+        ['label' => 'Annonces',        'icone' => 'bullhorn',           'route' => 'teacher.announcements'],
+        ['label' => 'Rapports',        'icone' => 'chart-column',       'route' => 'teacher.reports'],
     ];
 
-    $actions = [
-        ['label' => 'Prendre Présence', 'icone' => 'user-check',         'href' => '#'],
-        ['label' => 'Saisir Notes',     'icone' => 'pen-to-square',      'href' => '#'],
-        ['label' => 'Créer Devoir',     'icone' => 'file-circle-plus',   'href' => '#'],
-        ['label' => 'Voir Rapports',    'icone' => 'chart-column',       'href' => '#'],
+   $actions = [
+        ['label' => 'Prendre Présence', 'icone' => 'user-check',         'href' => route('teacher.attendance')],
+        ['label' => 'Saisir Notes',     'icone' => 'pen-to-square',      'href' => route('teacher.grades')],
+        ['label' => 'Créer Devoir',     'icone' => 'file-circle-plus',   'href' => route('teacher.assignments')],
+        ['label' => 'Voir Rapports',    'icone' => 'chart-column',       'href' => route('teacher.reports')],
     ];
 
     // Classes réutilisées
@@ -109,8 +109,15 @@
 <body class="flex min-h-screen flex-col bg-brand-fond font-sans text-sm text-brand-nuit md:flex-row">
 
     {{-- ===================== Barre latérale ===================== --}}
-    <aside class="flex w-full shrink-0 flex-col gap-3 bg-brand-nuit p-4 text-[#d3dcea] md:sticky md:top-0 md:h-screen md:w-[260px] md:gap-8 md:px-[17px] md:py-8">
-        <div class="text-[19px] font-extrabold tracking-[0.08em] text-brand-cyan md:px-4">SHARKLINK</div>
+    <aside class="flex w-full shrink-0 flex-col gap-3 bg-brand-nuit p-4 text-[#d3dcea] md:sticky md:top-0 md:h-screen md:w-[260px] md:gap-8 md:px-[17px] md:py-8">  
+        <div class="flex items-center justify-center gap-[5px] text-[19px] font-extrabold tracking-[0.08em] text-brand-cyan md:px-4">
+           <img
+                src="{{ asset('images/shark-mark-dark.svg') }}"
+                alt="Logo SHARKLINK"
+                class="h-[46px] w-[43px] shrink-0"
+            >
+            <span>SHARKLINK</span>
+        </div>
 
         <nav class="flex gap-1.5 overflow-x-auto pb-1 md:flex-col md:overflow-visible md:pb-0" aria-label="Navigation principale">
             @foreach ($menu as $item)

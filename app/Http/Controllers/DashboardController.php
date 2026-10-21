@@ -356,25 +356,25 @@ class DashboardController extends Controller
         $navigation = [];
         if (in_array('ETUDIANT', $roles, true)) {
             $navigation[] = ['type' => 'heading', 'title' => 'Espace étudiant', 'action' => ''];
-            $navigation[] = ['type' => 'link', 'label' => 'Tableau de bord', 'icon' => 'layout-dashboard', 'href' => route('dashboard'), 'active' => true];
-            $navigation[] = ['type' => 'link', 'label' => 'Mon profil', 'icon' => 'user-round', 'href' => '#'];
-            $navigation[] = ['type' => 'link', 'label' => 'Mes cours', 'icon' => 'book-open', 'href' => '#', 'chevron' => true];
-            $navigation[] = ['type' => 'link', 'label' => 'Mes notes', 'icon' => 'clipboard-list', 'href' => '#'];
-            $navigation[] = ['type' => 'link', 'label' => 'Emploi du temps', 'icon' => 'calendar-days', 'href' => '#'];
+            $navigation[] = ['type' => 'link', 'label' => 'Tableau de bord', 'icon' => 'layout-dashboard', 'href' => route('dashboard'), 'active' => request()->routeIs('dashboard')];
+            $navigation[] = ['type' => 'link', 'label' => 'Mon profil', 'icon' => 'user-round', 'href' => route('student.profile')];
+            $navigation[] = ['type' => 'link', 'label' => 'Mes cours', 'icon' => 'book-open', 'href' => route('student.courses'), 'chevron' => true];
+            $navigation[] = ['type' => 'link', 'label' => 'Mes notes', 'icon' => 'clipboard-list', 'href' => route('student.grades')];
+            $navigation[] = ['type' => 'link', 'label' => 'Emploi du temps', 'icon' => 'calendar-days', 'href' => route('student.timetable')];
             $navigation[] = ['type' => 'heading', 'title' => 'Vie académique', 'action' => ''];
-            $navigation[] = ['type' => 'link', 'label' => 'Inscriptions', 'icon' => 'graduation-cap', 'href' => '#'];
-            $navigation[] = ['type' => 'link', 'label' => 'Compte financier', 'icon' => 'wallet', 'href' => '#'];
-            $navigation[] = ['type' => 'link', 'label' => 'Annonces', 'icon' => 'bell', 'href' => '#'];
+            $navigation[] = ['type' => 'link', 'label' => 'Inscriptions', 'icon' => 'graduation-cap', 'href' => route('student.enrollments')];
+            $navigation[] = ['type' => 'link', 'label' => 'Compte financier', 'icon' => 'wallet', 'href' => route('student.finances')];
+            $navigation[] = ['type' => 'link', 'label' => 'Annonces', 'icon' => 'bell', 'href' => route('student.announcements')];
         } elseif (in_array('ENSEIGNANT', $roles, true)) {
             $navigation[] = ['type' => 'heading', 'title' => 'Espace enseignant', 'action' => ''];
-            $navigation[] = ['type' => 'link', 'label' => 'Tableau de bord', 'icon' => 'layout-dashboard', 'href' => route('dashboard'), 'active' => true];
-            $navigation[] = ['type' => 'link', 'label' => 'Mes cours', 'icon' => 'book-open', 'href' => '#'];
-            $navigation[] = ['type' => 'link', 'label' => 'Saisie des notes', 'icon' => 'clipboard-list', 'href' => '#'];
-            $navigation[] = ['type' => 'link', 'label' => 'Emploi du temps', 'icon' => 'calendar-days', 'href' => '#'];
-            $navigation[] = ['type' => 'link', 'label' => 'Annonces', 'icon' => 'bell', 'href' => '#'];
+            $navigation[] = ['type' => 'link', 'label' => 'Tableau de bord', 'icon' => 'layout-dashboard', 'href' => route('dashboard'), 'active' => request()->routeIs('dashboard')];
+            $navigation[] = ['type' => 'link', 'label' => 'Mes cours', 'icon' => 'book-open', 'href' => route('teacher.courses')];
+            $navigation[] = ['type' => 'link', 'label' => 'Saisie des notes', 'icon' => 'clipboard-list', 'href' => route('teacher.grades')];
+            $navigation[] = ['type' => 'link', 'label' => 'Emploi du temps', 'icon' => 'calendar-days', 'href' => route('teacher.timetable')];
+            $navigation[] = ['type' => 'link', 'label' => 'Annonces', 'icon' => 'bell', 'href' => route('teacher.announcements')];
         } else {
             $navigation[] = ['type' => 'heading', 'title' => 'Administration', 'action' => ''];
-            $navigation[] = ['type' => 'link', 'label' => 'Tableau de bord', 'icon' => 'layout-dashboard', 'href' => route('dashboard'), 'active' => true];
+            $navigation[] = ['type' => 'link', 'label' => 'Tableau de bord', 'icon' => 'layout-dashboard', 'href' => route('dashboard'), 'active' => request()->routeIs('dashboard')];
             $navigation[] = ['type' => 'link', 'label' => 'Établissements', 'icon' => 'building', 'href' => '#'];
             $navigation[] = ['type' => 'link', 'label' => 'Utilisateurs', 'icon' => 'users', 'href' => '#'];
         }

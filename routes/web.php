@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EstablishmentSelectionController;
+use App\Http\Controllers\TeacherController;
 // =============================================================================
 // 1. ROUTES PUBLIQUES (Accessibles sans être connecté)
 // =============================================================================
@@ -70,6 +71,32 @@ Route::middleware(['auth'])->group(function () {
         $request->session()->regenerateToken();
         return redirect()->route('login');
     })->name('logout');
+
+    // --- Gestion des routes pour les enseignants ---
+    Route::get('/teacher/courses', [TeacherController::class, 'courses'])
+    ->middleware('establishment.active')
+    ->name('teacher.courses.index');
+
+    Route::prefix('teacher')->name('teacher.')->middleware('establishment.active')->group(function () {
+        Route::get('/courses', [\App\Http\Controllers\TeacherController::class, 'courses'])->name('courses');
+        Route::get('/grades', [\App\Http\Controllers\TeacherController::class, 'grades'])->name('grades');
+        Route::get('/timetable', [\App\Http\Controllers\TeacherController::class, 'timetable'])->name('timetable');
+        Route::get('/attendance', [\App\Http\Controllers\TeacherController::class, 'attendance'])->name('attendance');
+        Route::get('/assignments', [\App\Http\Controllers\TeacherController::class, 'assignments'])->name('assignments');
+        Route::get('/announcements', [\App\Http\Controllers\TeacherController::class, 'announcements'])->name('announcements');
+        Route::get('/reports', [\App\Http\Controllers\TeacherController::class, 'reports'])->name('reports');
+    });
+
+        // ✅ --- Gestion des routes pour les étudiants ---
+    Route::prefix('student')->name('student.')->middleware('establishment.active')->group(function () {
+        Route::get('/profile', [\App\Http\Controllers\StudentController::class, 'profile'])->name('profile');
+        Route::get('/courses', [\App\Http\Controllers\StudentController::class, 'courses'])->name('courses');
+        Route::get('/grades', [\App\Http\Controllers\StudentController::class, 'grades'])->name('grades');
+        Route::get('/timetable', [\App\Http\Controllers\StudentController::class, 'timetable'])->name('timetable');
+        Route::get('/enrollments', [\App\Http\Controllers\StudentController::class, 'enrollments'])->name('enrollments');
+        Route::get('/finances', [\App\Http\Controllers\StudentController::class, 'finances'])->name('finances');
+        Route::get('/announcements', [\App\Http\Controllers\StudentController::class, 'announcements'])->name('announcements');
+    });
 
     // Tu ajouteras ici toutes les autres routes protégées plus tard (ex: /etudiants, /notes, etc.)
 });

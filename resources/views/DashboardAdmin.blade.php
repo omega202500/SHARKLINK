@@ -76,6 +76,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Arimo:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <style>
         :root {
@@ -409,6 +410,12 @@
         .raccourci:hover { background: #e7fafd; }
         .raccourci img { width: 22px; height: 22px; }
 
+        @media (max-width: 1023px) {
+            .entete {
+                padding-left: 16px;
+            }
+        }
+
         /* Pied de page */
         .pied { display: flex; justify-content: space-between; gap: 12px; font-size: 11px; color: var(--gris); }
         .pied .sync { color: var(--vert); }
@@ -439,13 +446,160 @@
         .compte-dropdown button:hover {
             background: var(--fond) !important;
         }
+        /* Contenu principal */
+        .contenu {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        @media (min-width: 1024px) {
+            .contenu {
+                padding-left: 24px;
+                padding-right: 24px;
+            }
+        }
+
+        @media (max-width: 1023px) {
+            .contenu {
+                padding: 16px;
+            }
+        }
+
+        /* ---------- Menu mobile responsive Admin ---------- */
+        .sidebar-admin {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 280px;
+            transform: translateX(-100%); /* Caché par défaut */
+            transition: transform 0.3s ease-in-out;
+            z-index: 50;
+            overflow-y: auto;
+            background: var(--bleu-nuit);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+
+        /* Sur desktop (>= 1024px), la sidebar est complètement cachée */
+        @media (min-width: 1024px) {
+            .sidebar-admin {
+                display: none !important; /* Totalement invisible sur desktop */
+            }
+            .overlay-admin {
+                display: none !important;
+            }
+            .btn-hamburger {
+                display: none !important;
+            }
+        }
+
+        /* Sur mobile (< 1024px) */
+        @media (max-width: 1023px) {
+            .sidebar-admin.open {
+                transform: translateX(0); /* Visible quand active */
+            }
+            .overlay-admin.active {
+                display: block;
+            }
+            .btn-hamburger {
+                display: block !important;
+            }
+        }
+
+        .sidebar-admin::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+
+        .overlay-admin {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+        }
+
+         .btn-hamburger { 
+            display: none; 
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            margin-right: 12px;
+        }
+        @media (max-width: 1023px) {
+            .btn-hamburger {
+                display: flex !important;
+                align-items: center;
+                justify-content: center;
+            }
+        }
     </style>
-    
 </head>
 <body>
+    {{-- Overlay pour fermer le menu en cliquant à l'extérieur --}}
+    <div id="overlay-admin" class="overlay-admin" onclick="toggleAdminSidebar()"></div>
 
+    {{-- ===================== Barre latérale (Sidebar) ===================== --}}
+    <aside id="sidebar-admin" class="sidebar-admin">
+        <div style="display: flex; flex-direction: column; height: 100%; padding: 1.5rem;">
+            
+            {{-- Logo et Bouton Fermer (Mobile) --}}
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <a href="{{ route('dashboard') }}" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
+                    <img src="{{ asset('images/shark-mark-dark.svg') }}" alt="SHARKLINK" 
+                        style="height: 30px; width: auto; filter: brightness(0) invert(1);" />
+                    <span style="font-size: 18px; font-weight: 800; color: var(--cyan); letter-spacing: 0.05em;">SHARKLINK</span>
+                </a>
+                <button onclick="toggleAdminSidebar()" class="btn-close-mobile" style="background: none; border: none; color: white; cursor: pointer; padding: 8px; display: none;">
+                    <i class="fa-solid fa-xmark" style="font-size: 24px;"></i>
+                </button>
+            </div>
+
+            <style>
+            @media (max-width: 1023px) {
+                .btn-close-mobile {
+                    display: block !important;
+                }
+            }
+            </style>
+
+            {{-- Navigation (Scrollable si trop longue) --}}
+            <nav style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1; overflow-y: auto;">
+                <a href="{{ route('dashboard') }}" style="display: flex; align-items: center; gap: 14px; padding: 10px 16px; border-radius: 8px; font-size: 15px; text-decoration: none; color: #d3dcea; transition: background 0.15s;" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                    <i class="fa-solid fa-gauge-high" style="width: 20px; text-align: center;"></i> Tableau de bord
+                </a>
+                <a href="{{ route('admin.users') }}" style="display: flex; align-items: center; gap: 14px; padding: 10px 16px; border-radius: 8px; font-size: 15px; text-decoration: none; color: #d3dcea; transition: background 0.15s;" class="nav-link">
+                    <i class="fa-solid fa-users" style="width: 20px; text-align: center;"></i> Utilisateurs
+                </a>
+                <a href="{{ route('admin.establishments') }}" style="display: flex; align-items: center; gap: 14px; padding: 10px 16px; border-radius: 8px; font-size: 15px; text-decoration: none; color: #d3dcea; transition: background 0.15s;" class="nav-link">
+                    <i class="fa-solid fa-building" style="width: 20px; text-align: center;"></i> Établissements
+                </a>
+                <a href="{{ route('admin.programs') }}" style="display: flex; align-items: center; gap: 14px; padding: 10px 16px; border-radius: 8px; font-size: 15px; text-decoration: none; color: #d3dcea; transition: background 0.15s;" class="nav-link">
+                    <i class="fa-solid fa-graduation-cap" style="width: 20px; text-align: center;"></i> Programmes
+                </a>
+                <a href="{{ route('admin.roles') }}" style="display: flex; align-items: center; gap: 14px; padding: 10px 16px; border-radius: 8px; font-size: 15px; text-decoration: none; color: #d3dcea; transition: background 0.15s;" class="nav-link">
+                    <i class="fa-solid fa-user-shield" style="width: 20px; text-align: center;"></i> Rôles & Permissions
+                </a>
+                <a href="{{ route('admin.reports') }}" style="display: flex; align-items: center; gap: 14px; padding: 10px 16px; border-radius: 8px; font-size: 15px; text-decoration: none; color: #d3dcea; transition: background 0.15s;" class="nav-link">
+                    <i class="fa-solid fa-chart-column" style="width: 20px; text-align: center;"></i> Rapports
+                </a>
+                <a href="{{ route('admin.settings') }}" style="display: flex; align-items: center; gap: 14px; padding: 10px 16px; border-radius: 8px; font-size: 15px; text-decoration: none; color: #d3dcea; transition: background 0.15s;" class="nav-link">
+                    <i class="fa-solid fa-gear" style="width: 20px; text-align: center;"></i> Paramètres
+                </a>
+            </nav>
+        </div>
+    </aside>
     {{-- ===================== En-tête ===================== --}}
     <header class="entete">
+        {{-- Bouton Hamburger (visible uniquement sur mobile) --}}
+        <button onclick="toggleAdminSidebar()" class="btn-hamburger" style="background: none; border: none; cursor: pointer; padding: 8px; margin-right: 16px;">
+            <i class="fa-solid fa-bars" style="font-size: 20px; color: var(--bleu-nuit);"></i>
+        </button>
         <div class="page-annee">
             <p class="page">{{ $page ?? 'Tableau de bord' }}</p>
             <div class="annee">Année <span class="arimo">{{ $annee }}</span></div>
@@ -771,5 +925,13 @@
         </footer>
     </main>
 
+    <script>
+        function toggleAdminSidebar() {
+            document.getElementById('sidebar-admin').classList.toggle('open');
+            document.getElementById('overlay-admin').classList.toggle('active');
+        }
+    </script>
+</body>
+</html>
 </body>
 </html>

@@ -85,6 +85,12 @@
         .sidebar-mobile {
             transform: translateX(-100%);
             transition: transform 0.3s ease-in-out;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        .sidebar-mobile::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
         }
         .sidebar-mobile.open {
             transform: translateX(0);
@@ -135,20 +141,22 @@
     {{-- Overlay pour fermer le menu en cliquant à l'extérieur --}}
     <div id="sidebar-overlay" class="overlay" onclick="toggleSidebar()"></div>
     {{-- ===================== Barre latérale ===================== --}}
-    <aside id="sidebar" class="sidebar-mobile fixed top-0 left-0 z-50 h-full w-[260px] flex flex-col gap-3 bg-brand-nuit p-4 text-[#d3dcea] md:static md:transform-none">        
-        <div class="flex items-center justify-center gap-[5px] text-[19px] font-extrabold tracking-[0.08em] text-brand-cyan md:px-4">
-           <img
-                src="{{ asset('images/shark-mark-dark.svg') }}"
-                alt=""
-                class="h-[46px] w-[43px] shrink-0"
-            >
-            <span>SHARKLINK</span>
-        </div>
-        <button onclick="toggleSidebar()" class="md:hidden absolute top-4 right-4 text-white hover:text-brand-cyan">
-            <i class="fa-solid fa-xmark text-xl"></i>
-        </button>
+    <aside id="sidebar" class="sidebar-mobile fixed top-0 left-0 z-50 h-screen w-[260px] bg-brand-nuit text-[#d3dcea] overflow-y-auto md:static md:h-auto md:overflow-visible">
+        <div class="flex flex-col gap-3 p-4 md:gap-8 md:p-[17px] md:py-8">
+            
+            {{-- Logo --}}
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-[5px] text-[19px] font-extrabold tracking-[0.08em] text-brand-cyan">
+                    <img src="{{ asset('images/shark-mark-dark.svg') }}" alt="Logo SHARKLINK" class="h-[46px] w-[43px] shrink-0">
+                    <span>SHARKLINK</span>
+                </div>
+                <button onclick="toggleSidebar()" class="md:hidden text-white hover:text-brand-cyan">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
 
-        <nav class="flex gap-1.5 overflow-x-auto pb-1 md:flex-col md:overflow-visible md:pb-0" aria-label="Navigation principale">
+        {{-- Navigation --}}
+        <nav class="flex flex-col gap-1.5">
             @foreach ($menu as $item)
                 @php
                     $actif = $item['route'] && request()->routeIs($item['route']);

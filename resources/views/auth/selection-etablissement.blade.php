@@ -40,7 +40,7 @@
         .marque {
             display: flex;
             align-items: center;
-            gap: 11px;
+            /* gap: 2px; */
             text-decoration: none;
         }
 
@@ -218,10 +218,10 @@
             <img src="{{ asset('images/requin.svg') }}" alt="">
             <span>SHARKLINK</span>
         </a>
-         <form method="POST" action="{{ route('logout') }}">
+         {{-- <form method="POST" action="{{ route('logout') }}">
             @csrf
             <button type="submit" class="deconnexion">Se déconnecter</button>
-        </form>
+        </form> --}}
     </header>
 
     {{-- Choix de l'établissement --}}

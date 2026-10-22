@@ -1,7 +1,7 @@
 <aside class="hidden min-h-screen w-[270px] shrink-0 flex-col bg-navy px-3.5 py-6 lg:flex">
     <div class="flex items-center justify-between px-2 pb-[22px]">
         <a href="{{ route('dashboard') }}" class="flex items-center gap-[3px]">
-            <img src="{{ asset('images/shark-mark.svg') }}" alt="" class="h-[31px] w-[29px]">
+            <img src="{{ asset('images/Shark-mark.svg') }}" alt="" class="h-[31px] w-[29px]">
             <span class="text-[21px] font-extrabold text-white">SHARKLINK</span>
         </a>
         <button type="button" class="text-white" aria-label="Réduire le menu">

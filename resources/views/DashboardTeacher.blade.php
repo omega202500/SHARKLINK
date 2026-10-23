@@ -145,16 +145,23 @@
         <div class="flex flex-col gap-3 p-4 md:gap-8 md:p-[17px] md:py-8">
             
             {{-- Logo --}}
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-[5px] text-[19px] font-extrabold tracking-[0.08em] text-brand-cyan">
-                    <img src="{{ asset('images/shark-mark-dark.svg') }}" alt="Logo SHARKLINK" class="h-[46px] w-[43px] shrink-0">
-                    <span>SHARKLINK</span>
-                </div>
-                <button onclick="toggleSidebar()" class="md:hidden text-white hover:text-brand-cyan">
-                    <i class="fa-solid fa-xmark text-xl"></i>
-                </button>
+        <div class="flex items-center justify-between px-4">
+            <div class="flex items-center gap-1">
+                <img src="{{ asset('images/shark-mark-dark.svg') }}"
+                    alt=""
+                    style="height: 30px; width: auto; filter: brightness(0) invert(1);" />
+
+                <span style="font-size: 18px; font-weight: 800; color: var(--cyan); letter-spacing: 0.05em;">
+                    SHARKLINK
+                </span>
             </div>
 
+            <button type="button" data-sidebar-close
+                    class="text-[#d3dcea] hover:text-white md:hidden"
+                    aria-label="Fermer le menu">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+        </div>
         {{-- Navigation --}}
         <nav class="flex flex-col gap-1.5">
             @foreach ($menu as $item)

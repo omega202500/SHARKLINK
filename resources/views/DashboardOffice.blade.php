@@ -25,12 +25,25 @@
     <div id="sidebar-overlay" class="fixed inset-0 z-30 hidden bg-black/50 md:hidden"></div>
     {{-- Sidebar --}}
     <aside id="sidebar" class="fixed left-0 top-0 z-40 flex h-screen w-[260px] -translate-x-full flex-col gap-3 overflow-y-auto bg-brand-nuit px-[17px] py-8 text-[#d3dcea] transition-transform duration-300 ease-in-out md:sticky md:shrink-0 md:translate-x-0">        <div id="sidebar-overlay" class="fixed inset-0 z-30 hidden bg-black/50 md:hidden"></div>
+
         <div class="flex items-center justify-between px-4">
-            <span class="text-[19px] font-extrabold tracking-[0.08em] text-brand-cyan">SHARKLINK</span>
-            <button type="button" data-sidebar-close class="text-[#d3dcea] hover:text-white md:hidden" aria-label="Fermer le menu">
+            <div class="flex items-center gap-1">
+                <img src="{{ asset('images/shark-mark-dark.svg') }}"
+                    alt=""
+                    style="height: 30px; width: auto; filter: brightness(0) invert(1);" />
+
+                <span style="font-size: 18px; font-weight: 800; color: var(--cyan); letter-spacing: 0.05em;">
+                    SHARKLINK
+                </span>
+            </div>
+
+            <button type="button" data-sidebar-close
+                    class="text-[#d3dcea] hover:text-white md:hidden"
+                    aria-label="Fermer le menu">
                 <i class="fa-solid fa-xmark text-xl"></i>
             </button>
         </div>
+
         <nav class="flex flex-col gap-1.5">
             <a href="{{ route('dashboard') }}" class="flex h-[42px] items-center gap-3.5 rounded-lg border border-transparent px-4 text-sm hover:bg-white/5 hover:text-white md:h-[46px] md:text-[15px]">
                 <i class="fa-solid fa-gauge-high w-5 text-center text-[17px]"></i><span>Tableau de bord</span>

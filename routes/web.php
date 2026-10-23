@@ -90,6 +90,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/courses', [\App\Http\Controllers\TeacherController::class, 'courses'])->name('courses');
         Route::get('/grades', [\App\Http\Controllers\TeacherController::class, 'grades'])->name('grades');
         Route::get('/timetable', [\App\Http\Controllers\TeacherController::class, 'timetable'])->name('timetable');
+        Route::post('/grades', [TeacherController::class, 'storeGrades'])->name('grades.store'); // NOUVEAU
         Route::get('/attendance', [\App\Http\Controllers\TeacherController::class, 'attendance'])->name('attendance');
         Route::get('/assignments', [\App\Http\Controllers\TeacherController::class, 'assignments'])->name('assignments');
         Route::get('/announcements', [\App\Http\Controllers\TeacherController::class, 'announcements'])->name('announcements');

@@ -22,9 +22,15 @@
 </head>
 <body class="flex min-h-screen flex-col bg-brand-fond font-sans text-sm text-brand-nuit md:flex-row">
 
+    <div id="sidebar-overlay" class="fixed inset-0 z-30 hidden bg-black/50 md:hidden"></div>
     {{-- Sidebar --}}
-    <aside class="flex w-full shrink-0 flex-col gap-3 bg-brand-nuit p-4 text-[#d3dcea] md:sticky md:top-0 md:h-screen md:w-[260px] md:px-[17px] md:py-8">
-        <div class="text-[19px] font-extrabold tracking-[0.08em] text-brand-cyan px-4">SHARKLINK</div>
+    <aside id="sidebar" class="fixed left-0 top-0 z-40 flex h-screen w-[260px] -translate-x-full flex-col gap-3 overflow-y-auto bg-brand-nuit px-[17px] py-8 text-[#d3dcea] transition-transform duration-300 ease-in-out md:sticky md:shrink-0 md:translate-x-0">        <div id="sidebar-overlay" class="fixed inset-0 z-30 hidden bg-black/50 md:hidden"></div>
+        <div class="flex items-center justify-between px-4">
+            <span class="text-[19px] font-extrabold tracking-[0.08em] text-brand-cyan">SHARKLINK</span>
+            <button type="button" data-sidebar-close class="text-[#d3dcea] hover:text-white md:hidden" aria-label="Fermer le menu">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+        </div>
         <nav class="flex flex-col gap-1.5">
             <a href="{{ route('dashboard') }}" class="flex h-[42px] items-center gap-3.5 rounded-lg border border-transparent px-4 text-sm hover:bg-white/5 hover:text-white md:h-[46px] md:text-[15px]">
                 <i class="fa-solid fa-gauge-high w-5 text-center text-[17px]"></i><span>Tableau de bord</span>
@@ -50,9 +56,16 @@
     <div class="min-w-0 flex-1">
         {{-- Header --}}
         <header class="flex h-[72px] items-center justify-between gap-4 border-b border-brand-trait bg-white px-4 md:px-9">
-            <div>
-                <h1 class="text-lg font-bold">Bonjour {{ $user->first_name }} {{ $user->last_name }}</h1>
-                <p class="mt-[3px] text-xs text-brand-gris">Scolarité · {{ $establishment->name }}</p>
+           <div class="flex min-w-0 items-center gap-3">
+                <button type="button" id="sidebar-toggle"
+                        class="flex size-9 shrink-0 items-center justify-center rounded-lg text-brand-nuit hover:bg-brand-pale md:hidden"
+                        aria-label="Ouvrir le menu" aria-controls="sidebar" aria-expanded="false">
+                    <i id="sidebar-toggle-icon" class="fa-solid fa-bars text-xl"></i>
+                </button>
+                <div class="min-w-0">
+                    <h1 class="truncate text-lg font-bold">Bonjour {{ $user->first_name }} {{ $user->last_name }}</h1>
+                    <p class="mt-[3px] truncate text-xs text-brand-gris">Scolarité · {{ $establishment->name }}</p>
+                </div>
             </div>
             <div class="flex items-center gap-4">
                 <a href="#" class="relative text-brand-nuit"><i class="fa-solid fa-bell text-[22px]"></i><span class="absolute right-0 top-0 size-[7px] rounded-full bg-red-500"></span></a>
@@ -99,5 +112,35 @@
             </section>
         </main>
     </div>
+    <script>
+        (function () {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            const toggle  = document.getElementById('sidebar-toggle');
+            const icon    = document.getElementById('sidebar-toggle-icon');
+            if (!sidebar || !toggle) return;
+
+            const isOpen = () => !sidebar.classList.contains('-translate-x-full');
+
+            function setOpen(open) {
+                sidebar.classList.toggle('-translate-x-full', !open);
+                overlay.classList.toggle('hidden', !open);
+                document.body.classList.toggle('overflow-hidden', open);
+                toggle.setAttribute('aria-expanded', open);
+                toggle.setAttribute('aria-label', open ? 'Fermer le menu' : 'Ouvrir le menu');
+                icon.classList.toggle('fa-bars', !open);
+                icon.classList.toggle('fa-xmark', open);
+            }
+
+            toggle.addEventListener('click', () => setOpen(!isOpen()));
+            overlay.addEventListener('click', () => setOpen(false));
+            document.querySelectorAll('[data-sidebar-close]').forEach(b =>
+                b.addEventListener('click', () => setOpen(false)));
+            document.addEventListener('keydown', e => { if (e.key === 'Escape') setOpen(false); });
+            window.matchMedia('(min-width: 768px)').addEventListener('change', e => {
+                if (e.matches) setOpen(false);
+            });
+        })();
+    </script>
 </body>
 </html>

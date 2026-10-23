@@ -1,10 +1,14 @@
-<aside class="hidden min-h-screen w-[270px] shrink-0 flex-col bg-navy px-3.5 py-6 lg:flex">
+{{-- Fond sombre derrière le menu (mobile / tablette uniquement) --}}
+<div id="sidebar-overlay" class="fixed inset-0 z-30 hidden bg-black/50 lg:hidden" aria-hidden="true"></div>
+
+<aside id="sidebar"
+       class="fixed inset-y-0 left-0 z-40 flex h-screen w-[270px] -translate-x-full flex-col overflow-y-auto bg-navy px-3.5 py-6 transition-transform duration-300 ease-in-out lg:static lg:h-auto lg:min-h-screen lg:shrink-0 lg:translate-x-0 lg:overflow-visible">
     <div class="flex items-center justify-between px-2 pb-[22px]">
         <a href="{{ route('dashboard') }}" class="flex items-center gap-[3px]">
             <img src="{{ asset('images/Shark-mark.svg') }}" alt="" class="h-[31px] w-[29px]">
             <span class="text-[21px] font-extrabold text-white">SHARKLINK</span>
         </a>
-        <button type="button" class="text-white" aria-label="Réduire le menu">
+        <button type="button" class="text-white" aria-label="Réduire le menu" data-sidebar-close>
             <x-icon name="panel-left-close" :size="16" />
         </button>
     </div>

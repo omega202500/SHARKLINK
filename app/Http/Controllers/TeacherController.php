@@ -111,19 +111,183 @@ class TeacherController extends Controller
                 ->where('status', 'PUBLIE')
                 ->orderBy('assessment_date', 'desc')
                 ->get();
+                
+        }
+        
+        // Charger les notes déjà saisies pour cette évaluation (si sélectionnée)
+        $existingGrades = collect();
+        $selectedAssessmentId = $request->integer('assessment_id');
+        if ($selectedOffering && $selectedAssessmentId) {
+            $assessmentBelongsToOffering = $assessments
+                ->contains('id', $selectedAssessmentId);
+
+            if ($assessmentBelongsToOffering) {
+                $existingGrades = DB::table('grades')
+                    ->where('assessment_id', $selectedAssessmentId)
+                    ->pluck('score', 'student_membership_id');
+            } else {
+                $selectedAssessmentId = null;
+            }
         }
 
         return view('teacher.grades', compact(
-            'context', 'offerings', 'selectedOffering', 'students', 'assessments'
+            'context', 'offerings', 'selectedOffering', 'students', 'assessments', 'existingGrades', 'selectedAssessmentId'
         ));
     }
 
-    /**
-     * Enregistrer les notes (Placeholder pour la prochaine étape)
+       /**
+     * Enregistrer les notes saisies par l'enseignant
      */
     public function storeGrades(Request $request)
     {
-        // Nous implémenterons la logique de sauvegarde dans la prochaine étape
-        return back()->with('success', 'Notes enregistrées avec succès ! (Fonctionnalité en cours de développement)');
+        // Validation stricte des données entrantes
+        $validated = $request->validate([
+            'offering_id' => 'required|exists:course_offerings,id',
+            'assessment_id' => 'required|exists:assessments,id',
+            'grades' => 'required|array',
+            'grades.*' => 'nullable|numeric|min:0|max:20',
+        ]);
+       
+        $context = $this->getTeacherContext($request);
+        $membershipId = $context['membership']->id;
+
+        // Vérification de sécurité : L'enseignant est-il bien assigné à ce cours ?
+        $isAssigned = DB::table('teacher_assignments')
+            ->where('teacher_membership_id', $membershipId)
+            ->where('course_offering_id', $validated['offering_id'])
+            ->exists();
+
+        abort_unless($isAssigned, 403, "Vous n'êtes pas autorisé à saisir des notes pour ce cours.");
+
+        $assessmentBelongsToOffering = DB::table('assessments')
+            ->where('id', $validated['assessment_id'])
+            ->where('course_offering_id', $validated['offering_id'])
+            ->where('status', 'PUBLIE')
+            ->exists();
+
+        abort_unless($assessmentBelongsToOffering, 404, "Cette évaluation n'appartient pas au cours sélectionné.");
+
+        // Traitement de chaque note
+        $savedCount = 0;
+        foreach ($validated['grades'] as $studentMembershipId => $score) {
+            if (!is_null($score) && $score !== '') {
+                DB::table('grades')->updateOrInsert(
+                    [
+                        'assessment_id' => $validated['assessment_id'],
+                        'student_membership_id' => $studentMembershipId,
+                    ],
+                    [
+                        'score'       => $score,
+                        'status'      => 'VALIDEE', // Ou 'BROUILLON' selon ton workflow
+                        'entered_by'  => $membershipId,
+                        'validated_at'=> now(),
+                    ]
+                );
+                $savedCount++;
+            }
+        }
+
+        return redirect()
+            ->route('teacher.grades', [
+                'offering_id' => $validated['offering_id'],
+                'assessment_id' => $validated['assessment_id'],
+            ])
+            ->with('success', "{$savedCount} note(s) enregistrée(s) avec succès.");
+    }
+
+    /**
+     * Publier les notes d'une évaluation (Rendre visibles aux étudiants)
+     */
+    public function publishGrades(Request $request)
+    {
+        $validated = $request->validate([
+            'offering_id' => 'required|exists:course_offerings,id',
+        ]);
+
+        $context = $this->getTeacherContext($request);
+        $membershipId = $context['membership']->id;
+
+        // Sécurité : l'enseignant doit être assigné à ce cours
+        $isAssigned = DB::table('teacher_assignments')
+            ->where('teacher_membership_id', $membershipId)
+            ->where('course_offering_id', $validated['offering_id'])
+            ->exists();
+
+        abort_unless($isAssigned, 403, "Vous n'êtes pas autorisé à publier les notes de ce cours.");
+
+        // Déjà publié pour ce cours (peu importe qui a publié)
+        $alreadyPublished = DB::table('grade_publications')
+            ->where('course_offering_id', $validated['offering_id'])
+            ->where('status', 'PUBLIE')
+            ->exists();
+
+        if ($alreadyPublished) {
+            return back()->with('success', 'Les notes de ce cours sont déjà publiées.');
+        }
+
+        // Rien à publier si aucune note n'a été saisie
+        $hasGrades = DB::table('grades as g')
+            ->join('assessments as a', 'g.assessment_id', '=', 'a.id')
+            ->where('a.course_offering_id', $validated['offering_id'])
+            ->whereNotNull('g.score')
+            ->exists();
+
+        if (!$hasGrades) {
+            return back()->withErrors("Aucune note saisie pour ce cours : rien à publier.");
+        }
+
+        DB::table('grade_publications')->insert([
+            'course_offering_id' => $validated['offering_id'],
+            'published_by'       => $membershipId,
+            'published_at'       => now(),
+            'status'             => 'PUBLIE',
+        ]);
+
+        return back()->with('success', 'Les notes de ce cours ont été publiées aux étudiants.');
+    }
+
+    /**
+     * Page Emploi du Temps (Provisoire)
+     */
+    public function timetable(Request $request): View
+    {
+        $context = $this->getTeacherContext($request);
+        return view('teacher.timetable', compact('context'));
+    }
+
+    /**
+     * Page Présence (Provisoire)
+     */
+    public function attendance(Request $request): View
+    {
+        $context = $this->getTeacherContext($request);
+        return view('teacher.attendance', compact('context'));
+    }
+
+    /**
+     * Page Devoirs (Provisoire)
+     */
+    public function assignments(Request $request): View
+    {
+        $context = $this->getTeacherContext($request);
+        return view('teacher.assignments', compact('context'));
+    }
+
+    /**
+     * Page Annonces (Provisoire)
+     */
+    public function announcements(Request $request): View
+    {
+        $context = $this->getTeacherContext($request);
+        return view('teacher.announcements', compact('context'));
+    }
+
+    /**
+     * Page Rapports (Provisoire)
+     */
+    public function reports(Request $request): View
+    {
+        $context = $this->getTeacherContext($request);
+        return view('teacher.reports', compact('context'));
     }
 }

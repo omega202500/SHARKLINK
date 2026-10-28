@@ -27,6 +27,7 @@ class DashboardController extends Controller
             'attendance_sessions',
             'grades',
             'assessments',
+            'grade_publications',
             'teacher_assignments',
             'assignment_submissions',
             'timetable_entries',
@@ -88,6 +89,7 @@ class DashboardController extends Controller
                 'profile' => $profile,
                 'courses' => [['name' => 'Aucun cours assigné pour le moment', 'term' => '-']],
                 'news' => [['image' => 'nsu-campus.png', 'title' => 'Bienvenue sur ' . $establishment->name, 'date' => 'Données académiques non disponibles']],
+                'studentNotes' => collect(),
                 'establishment' => $establishment,
             ]);
         }
@@ -207,6 +209,7 @@ class DashboardController extends Controller
                 ['nom' => 'Alice Mbarga', 'matricule' => 'SHK-2026-001', 'programme' => 'Informatique', 'examen' => 'Programmation Web', 'note' => 16.5, 'reussi' => true],
             ];
         }
+        
 
         // =====================================================================
         // 3. DONNÉES POUR DASHBOARD ÉTUDIANT / ENSEIGNANT
@@ -360,7 +363,27 @@ class DashboardController extends Controller
                         ];
                     });
             }
-
+            // Récupérer les notes PUBLIÉES de l'étudiant connecté
+            $studentNotes = DB::table('grades as g')
+                ->join('assessments as a', 'g.assessment_id', '=', 'a.id')
+                ->join('course_offerings as co', 'a.course_offering_id', '=', 'co.id')
+                ->join('courses as c', 'co.course_id', '=', 'c.id')
+                // ✅ CORRECTION : Jointure sur course_offering_id (niveau cours)
+                ->join('grade_publications as gp', function ($join) {
+                    $join->on('gp.course_offering_id', '=', 'co.id')
+                        ->where('gp.status', '=', 'PUBLIE');
+                })
+                ->where('g.student_membership_id', $membership->id)
+                ->select(
+                    'c.title as course_name', 
+                    'a.title as assessment_name', 
+                    'g.score', 
+                    'a.max_score',
+                    'gp.published_at as graded_at'
+                )
+                ->orderBy('gp.published_at', 'desc')
+                ->limit(5)
+                ->get();
             // 5. Dernières Activités
             $activites = DB::table('announcements')
                 ->where('author_membership_id', $membership->id)
@@ -388,6 +411,7 @@ class DashboardController extends Controller
                 'emploi' => $emploi,
                 'devoirs' => $devoirs,
                 'activites' => $activites,
+                'studentNotes' => $studentNotes,
             ]);
         }
 
@@ -461,8 +485,29 @@ class DashboardController extends Controller
         }
 
         // 3. Étudiants (Fallback par défaut)
+        $studentNotes = collect();
+        if (in_array('ETUDIANT', $roles, true) && $membership) {
+          $studentNotes = DB::table('grades as g')
+            ->join('assessments as a', 'g.assessment_id', '=', 'a.id')
+            ->join('course_offerings as co', 'a.course_offering_id', '=', 'co.id')
+            ->join('courses as c', 'co.course_id', '=', 'c.id')
+            ->where('g.student_membership_id', $membership->id)
+            ->whereNotNull('g.score')
+            ->whereExists(function ($q) {
+                $q->select(DB::raw(1))
+                ->from('grade_publications as gp')
+                ->whereColumn('gp.course_offering_id', 'co.id')
+                ->where('gp.status', 'PUBLIE');
+            })
+            ->orderByDesc('g.validated_at')
+            ->limit(5)
+            ->select('a.title as assessment_name', 'c.title as course_name',
+                    'g.score', 'a.max_score', 'g.validated_at as graded_at')
+            ->get();
+        }
+
         return view('dashboard', compact(
-            'navigation', 'quickLinks', 'profile', 'courses', 'news', 'establishment'
+            'navigation', 'quickLinks', 'profile', 'courses', 'news', 'studentNotes', 'establishment'
         ));
         
       

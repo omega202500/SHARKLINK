@@ -41,8 +41,10 @@
                 </dl>
 
                 <div class="mt-auto flex gap-2 pt-1">
-                    <a href="#" class="flex-1 rounded-[5px] bg-navy p-2.5 text-center text-[11px] font-semibold text-white">Dossier</a>
-                    <a href="#" class="flex-1 rounded-[5px] bg-navy p-2.5 text-center text-[11px] font-semibold text-white">Inscription</a>
+                    <a href="{{ route('student.grades') }}" class="flex-1 rounded-[5px] bg-navy p-2.5 text-center text-[11px] font-semibold text-white">Mes Notes</a>
+                    <a href="{{ route('student.pdf.transcript') }}" class="flex-1 rounded-[5px] bg-[#22d3ee] p-2.5 text-center text-[11px] font-semibold text-[#0b1f3a] hover:bg-opacity-90 transition-colors">
+                        📄 Relevé PDF
+                    </a>
                 </div>
             </article>
 

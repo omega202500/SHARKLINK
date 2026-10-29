@@ -99,7 +99,7 @@
             background: var(--fond);
             color: var(--bleu-nuit);
             font-family: 'Inter', Arial, sans-serif;
-            font-size: 12px;
+            font-size: 15px;
             min-height: 100vh;
         }
 

@@ -107,7 +107,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/enrollments', [\App\Http\Controllers\StudentController::class, 'enrollments'])->name('enrollments');
         Route::get('/finances', [\App\Http\Controllers\StudentController::class, 'finances'])->name('finances');
         Route::get('/announcements', [\App\Http\Controllers\StudentController::class, 'announcements'])->name('announcements');
-    });
+        Route::get('/pdf/transcript', [\App\Http\Controllers\TranscriptController::class, 'generate'])->name('pdf.transcript');
+        });
         // ✅ --- Gestion des routes pour la Scolarité / Secrétariat (Office) ---
     Route::prefix('office')->name('office.')->middleware('establishment.active')->group(function () {
         Route::get('/students', [\App\Http\Controllers\OfficeController::class, 'students'])->name('students');

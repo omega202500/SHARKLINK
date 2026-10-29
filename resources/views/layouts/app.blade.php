@@ -7,12 +7,15 @@
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-page font-sans text-ink antialiased">
+<body class="bg-[#f4fbff] text-[#0b1f3a] font-sans text-base antialiased">
     <div class="flex min-h-screen">
         @include('partials.sidebar')
 
@@ -22,6 +25,26 @@
         </main>
     </div>
 
+      {{-- 2. Tailwind CDN avec configuration personnalisée --}}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        // Définit 'Inter' comme police par défaut partout
+                        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+                    },
+                    fontSize: {
+                        // Augmente la taille de base pour une meilleure lisibilité SaaS
+                        base: ['15px', { lineHeight: '1.6' }], 
+                        sm: ['14px', { lineHeight: '1.5' }],
+                        xs: ['13px', { lineHeight: '1.4' }],
+                    }
+                }
+            }
+        }
+    </script>
     <script>
         (function () {
             const sidebar = document.getElementById('sidebar');

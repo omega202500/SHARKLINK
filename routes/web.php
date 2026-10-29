@@ -116,6 +116,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/timetable', [\App\Http\Controllers\OfficeController::class, 'timetable'])->name('timetable');
         Route::get('/announcements', [\App\Http\Controllers\OfficeController::class, 'announcements'])->name('announcements');
     });
-
+        // ✅ --- Routes de l'Espace Pédagogique ---
+    Route::prefix('pedagogy')->name('pedagogy.')->middleware('establishment.active')->group(function () {
+        Route::get('/dashboard', [\App\Http\Controllers\DeliberationController::class, 'dashboard'])->name('dashboard');
+        Route::get('/deliberate', [\App\Http\Controllers\DeliberationController::class, 'index'])->name('deliberate'); // L'ancienne page de liste
+        Route::get('/calculate', [\App\Http\Controllers\DeliberationController::class, 'calculate'])->name('calculate');
+        Route::post('/store', [\App\Http\Controllers\DeliberationController::class, 'store'])->name('store');
+    });
     // Tu ajouteras ici toutes les autres routes protégées plus tard (ex: /etudiants, /notes, etc.)
 });

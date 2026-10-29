@@ -484,7 +484,12 @@ class DashboardController extends Controller
             ]);
         }
 
-        // 3. Étudiants (Fallback par défaut)
+        // 3. Responsables Pédagogiques -> Dashboard Pédagogique dédié
+        if (in_array('RESPONSABLE_PEDAGOGIQUE', $roles, true)) {
+            return redirect()->route('pedagogy.dashboard');
+        }
+
+        // 4. Étudiants (Fallback par défaut)
         $studentNotes = collect();
         if (in_array('ETUDIANT', $roles, true) && $membership) {
           $studentNotes = DB::table('grades as g')

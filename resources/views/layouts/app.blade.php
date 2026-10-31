@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
       <title>SHARKLINK</title>
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v=3">
-    <link rel="shortcut icon" href="{{ asset('favicon.png') }}?v=3">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800" rel="stylesheet" />
     <link rel="preconnect" href="https://fonts.googleapis.com">

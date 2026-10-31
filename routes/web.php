@@ -49,7 +49,7 @@ Route::post('/login', function (Request $request) {
 // 2. ROUTES PROTÉGÉES (Nécessite d'être connecté - Middleware 'auth')
 // =============================================================================
 
-Route::middleware(['auth'])->group(function () {
+ Route::middleware(['auth', 'force.password.change'])->group(function () {
     
     // --- Gestion du Tableau de Bord ---
     Route::get('/dashboard', [DashboardController::class, 'index'])
@@ -80,19 +80,21 @@ Route::middleware(['auth'])->group(function () {
     });
 
         // ✅ --- Gestion des routes pour les administrateurs ---
-    Route::prefix('establishment')->name('establishment.')->middleware(['auth', 'establishment.active'])->group(function () {
+    Route::prefix('admin')->name('admin.')->middleware(['auth', 'establishment.active'])->group(function () {
         Route::get('/users', [\App\Http\Controllers\AdminController::class, 'users'])->name('users');
         Route::get('/establishments', [\App\Http\Controllers\AdminController::class, 'establishments'])->name('establishments');
         Route::get('/programs', [\App\Http\Controllers\AdminController::class, 'programs'])->name('programs');
         Route::get('/roles', [\App\Http\Controllers\AdminController::class, 'roles'])->name('roles');
         Route::get('/settings', [\App\Http\Controllers\AdminController::class, 'settings'])->name('settings');
         Route::get('/reports', [\App\Http\Controllers\AdminController::class, 'reports'])->name('reports');
+
         // ✅ Routes Admin pour les candidatures
         Route::prefix('applications')->name('applications.')->group(function () {
             Route::get('/', [\App\Http\Controllers\AdminApplicationController::class, 'index'])->name('index');
             Route::get('/{id}', [\App\Http\Controllers\AdminApplicationController::class, 'show'])->name('show');
             Route::post('/{id}/status', [\App\Http\Controllers\AdminApplicationController::class, 'updateStatus'])->name('update-status');
             Route::get('/{id}/admission-letter', [\App\Http\Controllers\AdminApplicationController::class, 'admissionLetter'])->name('admission-letter');
+            Route::post('/{id}/convert', [\App\Http\Controllers\AdminApplicationController::class, 'convertToStudent'])->name('convert');
         });
         
     });
@@ -149,4 +151,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/apply', [\App\Http\Controllers\ApplicationController::class, 'create'])->name('apply');
     Route::post('/apply', [\App\Http\Controllers\ApplicationController::class, 'store'])->name('apply.store');
     Route::get('/apply/success/{id}', [\App\Http\Controllers\ApplicationController::class, 'success'])->name('apply.success');
+    
+    Route::middleware(['auth', 'force.password.change'])->group(function () {
+    Route::get('/change-password', [\App\Http\Controllers\Auth\PasswordChangeController::class, 'show'])->name('password.change');
+    Route::post('/change-password', [\App\Http\Controllers\Auth\PasswordChangeController::class, 'update'])->name('password.update');
+   });
 });

@@ -591,6 +591,9 @@
                 <a href="{{ route('admin.settings') }}" style="display: flex; align-items: center; gap: 14px; padding: 10px 16px; border-radius: 8px; font-size: 15px; text-decoration: none; color: #d3dcea; transition: background 0.15s;" class="nav-link">
                     <i class="fa-solid fa-gear" style="width: 20px; text-align: center;"></i> Paramètres
                 </a>
+                <a href="{{ route('admin.applications.index') }}" style="display: flex; align-items: center; gap: 14px; padding: 10px 16px; border-radius: 8px; font-size: 15px; text-decoration: none; color: #d3dcea; transition: background 0.15s;" class="nav-link">
+                    <i class="fa-solid fa-user-plus" style="width: 20px; text-align: center;"></i> Candidatures
+                </a>
             </nav>
         </div>
     </aside>

@@ -72,14 +72,29 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->route('login');
     })->name('logout');
 
+    // ✅ Routes Super Admin (propriétaire de SHARKLINK)
+    Route::prefix('super-admin')->name('super-admin.')->middleware(['auth', 'superadmin'])->group(function () {
+        Route::get('/dashboard', [\App\Http\Controllers\SuperAdminController::class, 'dashboard'])->name('dashboard');
+        Route::get('/establishments', [\App\Http\Controllers\SuperAdminController::class, 'establishments'])->name('establishments');
+        Route::post('/establishments', [\App\Http\Controllers\SuperAdminController::class, 'storeEstablishment'])->name('establishments.store');
+    });
+
         // ✅ --- Gestion des routes pour les administrateurs ---
-    Route::prefix('admin')->name('admin.')->middleware('establishment.active')->group(function () {
+    Route::prefix('establishment')->name('establishment.')->middleware(['auth', 'establishment.active'])->group(function () {
         Route::get('/users', [\App\Http\Controllers\AdminController::class, 'users'])->name('users');
         Route::get('/establishments', [\App\Http\Controllers\AdminController::class, 'establishments'])->name('establishments');
         Route::get('/programs', [\App\Http\Controllers\AdminController::class, 'programs'])->name('programs');
         Route::get('/roles', [\App\Http\Controllers\AdminController::class, 'roles'])->name('roles');
         Route::get('/settings', [\App\Http\Controllers\AdminController::class, 'settings'])->name('settings');
         Route::get('/reports', [\App\Http\Controllers\AdminController::class, 'reports'])->name('reports');
+        // ✅ Routes Admin pour les candidatures
+        Route::prefix('applications')->name('applications.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\AdminApplicationController::class, 'index'])->name('index');
+            Route::get('/{id}', [\App\Http\Controllers\AdminApplicationController::class, 'show'])->name('show');
+            Route::post('/{id}/status', [\App\Http\Controllers\AdminApplicationController::class, 'updateStatus'])->name('update-status');
+            Route::get('/{id}/admission-letter', [\App\Http\Controllers\AdminApplicationController::class, 'admissionLetter'])->name('admission-letter');
+        });
+        
     });
 
     // --- Gestion des routes pour les enseignants ---
@@ -131,7 +146,7 @@ Route::middleware(['auth'])->group(function () {
         
     });
     // ✅ --- Routes Publiques de Candidature ---
-Route::get('/apply', [\App\Http\Controllers\ApplicationController::class, 'create'])->name('apply');
-Route::post('/apply', [\App\Http\Controllers\ApplicationController::class, 'store'])->name('apply.store');
-Route::get('/apply/success/{id}', [\App\Http\Controllers\ApplicationController::class, 'success'])->name('apply.success');
+    Route::get('/apply', [\App\Http\Controllers\ApplicationController::class, 'create'])->name('apply');
+    Route::post('/apply', [\App\Http\Controllers\ApplicationController::class, 'store'])->name('apply.store');
+    Route::get('/apply/success/{id}', [\App\Http\Controllers\ApplicationController::class, 'success'])->name('apply.success');
 });

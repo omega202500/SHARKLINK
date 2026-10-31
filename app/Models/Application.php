@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
 
 class Application extends Model
@@ -21,4 +23,19 @@ class Application extends Model
         'level_id',
         'status',
     ];
+
+    public function program(): BelongsTo
+    {
+        return $this->belongsTo(Program::class);
+    }
+
+    public function level(): BelongsTo
+    {
+        return $this->belongsTo(Level::class);
+    }
+
+    public function documents(): HasMany
+    {
+        return $this->hasMany(ApplicationDocument::class);
+    }
 }

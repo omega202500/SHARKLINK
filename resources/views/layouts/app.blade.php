@@ -38,9 +38,9 @@
                     },
                     fontSize: {
                         // Augmente la taille de base pour une meilleure lisibilité SaaS
-                        base: ['30px', { lineHeight: '2' }], 
-                        sm: ['30px', { lineHeight: '2' }],
-                        xs: ['30px', { lineHeight: '2' }],
+                        base: ['16px', { lineHeight: '2' }], 
+                        sm: ['16px', { lineHeight: '2' }],
+                        xs: ['16px', { lineHeight: '2' }],
                     }
                 }
             }

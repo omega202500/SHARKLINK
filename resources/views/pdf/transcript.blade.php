@@ -387,21 +387,23 @@
         <div class="signature-col">
             <div class="signature-title">Le Président du Jury</div>
             <div class="signature-title-en">The Jury's President</div>
-            <div class="signature-space"></div>
+            <div class="signature-space" style="border-bottom: 1px dotted #000; margin: 40px 20px 0 20px;"></div>
         </div>
+        
         <div class="signature-col">
             <div class="signature-date">{{ $establishment->city ?? 'Douala' }}, le {{ $generated_at }}</div>
-            <div class="signature-date" style="font-style: italic;">{{ $establishment->city ?? 'Douala' }}, on the {{ $generated_at }}</div>
-            <div class="stamp-area">
-                <div style="border: 2px dashed #999; width: 80px; height: 80px; border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 8px; color: #999;">
-                    CACHET<br>OFFICIEL
-                </div>
+            <div class="signature-date" style="font-style: italic; margin-bottom: 10px;">{{ $establishment->city ?? 'Douala' }}, on the {{ $generated_at }}</div>
+            
+            {{-- Zone pour le CACHET OFFICIEL --}}
+            <div style="border: 2px dashed #999; width: 90px; height: 90px; border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #999; text-align: center; padding: 5px;">
+                Espace réservé<br>au Cachet Officiel
             </div>
         </div>
+
         <div class="signature-col">
             <div class="signature-title">Le Chef de Département</div>
             <div class="signature-title-en">The Head of Department</div>
-            <div class="signature-space"></div>
+            <div class="signature-space" style="border-bottom: 1px dotted #000; margin: 40px 20px 0 20px;"></div>
         </div>
     </div>
 

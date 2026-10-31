@@ -82,6 +82,14 @@ class DashboardController extends Controller
             ];
 
             $quickLinks = ['Dossier académique', 'Inscriptions', 'Compte financier', 'Emploi du temps'];
+            
+            //  Menu de navigation pour l'étudiant
+           $navigation = [
+                ['label' => 'Tableau de bord', 'icon' => 'layout-dashboard', 'href' => route('dashboard'), 'active' => true],
+                ['label' => 'Mes cours', 'icon' => 'book-open', 'href' => '#'],
+                ['label' => 'Mes notes', 'icon' => 'clipboard-list', 'href' => route('student.grades')],
+                ['label' => 'Emploi du temps', 'icon' => 'calendar-days', 'href' => '#'],
+            ];
 
             return view('dashboard', [
                 'navigation' => $navigation,

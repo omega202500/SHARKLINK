@@ -14,6 +14,20 @@
     </div>
 
     <nav class="flex flex-col">
+        @php
+            $navigation = $navigation ?? [
+                ['type' => 'heading', 'title' => 'Espace étudiant', 'action' => ''],
+                ['type' => 'link', 'label' => 'Tableau de bord', 'icon' => 'layout-dashboard', 'href' => route('dashboard'), 'active' => request()->routeIs('dashboard')],
+                ['type' => 'link', 'label' => 'Mon profil', 'icon' => 'user-round', 'href' => route('student.profile')],
+                ['type' => 'link', 'label' => 'Mes cours', 'icon' => 'book-open', 'href' => route('student.courses'), 'chevron' => true],
+                ['type' => 'link', 'label' => 'Mes notes', 'icon' => 'clipboard-list', 'href' => route('student.grades')],
+                ['type' => 'link', 'label' => 'Emploi du temps', 'icon' => 'calendar-days', 'href' => route('student.timetable')],
+                ['type' => 'heading', 'title' => 'Vie académique', 'action' => ''],
+                ['type' => 'link', 'label' => 'Inscriptions', 'icon' => 'graduation-cap', 'href' => route('student.enrollments')],
+                ['type' => 'link', 'label' => 'Compte financier', 'icon' => 'wallet', 'href' => route('student.finances')],
+                ['type' => 'link', 'label' => 'Annonces', 'icon' => 'bell', 'href' => route('student.announcements')],
+            ];
+        @endphp
         @foreach ($navigation as $entry)
             @if ($entry['type'] === 'heading')
                 <div class="flex items-start justify-between px-3 pb-2.5 pt-[22px]">

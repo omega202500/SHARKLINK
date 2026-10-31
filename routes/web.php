@@ -107,7 +107,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/enrollments', [\App\Http\Controllers\StudentController::class, 'enrollments'])->name('enrollments');
         Route::get('/finances', [\App\Http\Controllers\StudentController::class, 'finances'])->name('finances');
         Route::get('/announcements', [\App\Http\Controllers\StudentController::class, 'announcements'])->name('announcements');
-        Route::get('/pdf/transcript', [\App\Http\Controllers\TranscriptController::class, 'generate'])->name('pdf.transcript');
+        Route::get('/pdf/transcript', [\App\Http\Controllers\TranscriptController::class, 'generate'])->name('transcript');
         });
         // ✅ --- Gestion des routes pour la Scolarité / Secrétariat (Office) ---
     Route::prefix('office')->name('office.')->middleware('establishment.active')->group(function () {
@@ -130,5 +130,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/store', [\App\Http\Controllers\DeliberationController::class, 'store'])->name('store');
         
     });
-    // Tu ajouteras ici toutes les autres routes protégées plus tard (ex: /etudiants, /notes, etc.)
+    // ✅ --- Routes Publiques de Candidature ---
+Route::get('/apply', [\App\Http\Controllers\ApplicationController::class, 'create'])->name('apply');
+Route::post('/apply', [\App\Http\Controllers\ApplicationController::class, 'store'])->name('apply.store');
+Route::get('/apply/success/{id}', [\App\Http\Controllers\ApplicationController::class, 'success'])->name('apply.success');
 });

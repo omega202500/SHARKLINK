@@ -120,9 +120,15 @@ Route::middleware(['auth'])->group(function () {
         // ✅ --- Routes de l'Espace Pédagogique ---
     Route::prefix('pedagogy')->name('pedagogy.')->middleware('establishment.active')->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\DeliberationController::class, 'dashboard'])->name('dashboard');
-        Route::get('/deliberate', [\App\Http\Controllers\DeliberationController::class, 'index'])->name('deliberate'); // L'ancienne page de liste
+        Route::view('/deliberations', 'pedagogy.deliberations')->name('deliberations');
+        Route::view('/validation', 'pedagogy.validation')->name('validation');
+        Route::view('/programs', 'pedagogy.programs')->name('programs');
+        Route::view('/teachers', 'pedagogy.teachers')->name('teachers');
+        Route::view('/reports', 'pedagogy.reports')->name('reports');
+        Route::get('/deliberate', [\App\Http\Controllers\DeliberationController::class, 'index'])->name('deliberate');
         Route::get('/calculate', [\App\Http\Controllers\DeliberationController::class, 'calculate'])->name('calculate');
         Route::post('/store', [\App\Http\Controllers\DeliberationController::class, 'store'])->name('store');
+        
     });
     // Tu ajouteras ici toutes les autres routes protégées plus tard (ex: /etudiants, /notes, etc.)
 });

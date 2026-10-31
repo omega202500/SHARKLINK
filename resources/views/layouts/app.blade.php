@@ -3,8 +3,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'SHARKLINK')</title>
-
+      <title>SHARKLINK</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v=3">
+    <link rel="shortcut icon" href="{{ asset('favicon.png') }}?v=3">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800" rel="stylesheet" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -38,9 +39,9 @@
                     },
                     fontSize: {
                         // Augmente la taille de base pour une meilleure lisibilité SaaS
-                        base: ['15px', { lineHeight: '2' }], 
-                        sm: ['14px', { lineHeight: '2' }],
-                        xs: ['13px', { lineHeight: '2' }],
+                        base: ['30px', { lineHeight: '2' }], 
+                        sm: ['30px', { lineHeight: '2' }],
+                        xs: ['30px', { lineHeight: '2' }],
                     }
                 }
             }

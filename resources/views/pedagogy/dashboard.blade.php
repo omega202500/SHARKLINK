@@ -7,7 +7,7 @@
 | Variables optionnelles (toutes ont une valeur par défaut, la vue fonctionne seule) :
 |   $currentUser  : ['name','first_name','initials','role']
 |   $activeItem   : libellé du menu actif (défaut : "Tableau de bord")
-|   $navigation   : [['label','icon','href'], ...]
+|   $navigation   : [['label','icon','route'], ...]
 |   $semester     : ex. "Semestre 1 · 2026-2027"
 |   $academicYear : ex. "2026-2027"
 |   $kpis         : [['icon','label','value','helper'], ...]
@@ -33,12 +33,12 @@
     $alertCount    = $alertCount    ?? 3;
 
     $navigation = $navigation ?? [
-        ['label' => 'Tableau de bord',       'icon' => 'layout-dashboard',      'href' => '#'],
-        ['label' => 'Délibérations & PV',    'icon' => 'clipboard-check',       'href' => '#'],
-        ['label' => 'Validation des Notes',  'icon' => 'badge-check',           'href' => '#'],
-        ['label' => 'Programmes & Filières', 'icon' => 'graduation-cap',        'href' => '#'],
-        ['label' => 'Enseignants',           'icon' => 'users-round',           'href' => '#'],
-        ['label' => 'Rapports Académiques',  'icon' => 'chart-no-axes-combined','href' => '#'],
+        ['label' => 'Tableau de bord',       'icon' => 'layout-dashboard',      'route' => 'pedagogy.dashboard'],
+        ['label' => 'Délibérations & PV',    'icon' => 'clipboard-check',       'route' => 'pedagogy.deliberations'],
+        ['label' => 'Validation des Notes',  'icon' => 'badge-check',           'route' => 'pedagogy.validation'],
+        ['label' => 'Programmes & Filières', 'icon' => 'graduation-cap',        'route' => 'pedagogy.programs'],
+        ['label' => 'Enseignants',           'icon' => 'users-round',           'route' => 'pedagogy.teachers'],
+        ['label' => 'Rapports Académiques',  'icon' => 'chart-no-axes-combined','route' => 'pedagogy.reports'],
     ];
 
     $kpis = $kpis ?? [
@@ -170,7 +170,7 @@
 
             @foreach ($navigation as $item)
                 @php $active = $activeItem === $item['label']; @endphp
-                <a href="{{ $item['href'] ?? '#' }}"
+                <a href="{{ isset($item['route']) ? route($item['route']) : '#' }}"
                    @if($active) aria-current="page" @endif
                    class="relative flex w-full items-center gap-[13px] rounded-[10px] border px-[13px] py-3 text-left text-[13px] font-medium transition duration-150
                           {{ $active
